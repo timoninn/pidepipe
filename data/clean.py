@@ -17,6 +17,7 @@ def remove_outliers_z(X, y=None, attrs=None, theshold=3):
     Returns:
         tuple -- Cleaned X, y.
     """
+
     check_examples_count(X, y)
 
     print('Input data shape:' + str(X.shape))
@@ -36,12 +37,13 @@ def remove_outliers_z(X, y=None, attrs=None, theshold=3):
 
 
 def check_examples_count(lhs, rhs=None):
-    """Check that examples count equal on rhs and lsh.
+    """ Check that examples count equal on rhs and lsh.
 
-    :lhs: TODO
-    :rhs: TODO
-    :returns: TODO
+    Arguments:
+        lhs {DataFrame}
 
+    Keyword Arguments:
+        rhs {DataFrame} -- (default: {None})
     """
 
     if rhs is not None:
