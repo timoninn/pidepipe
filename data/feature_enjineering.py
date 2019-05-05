@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def apply_cat_op(data, attrs, operation, prefix):
     """
     Apply one operation to data attributes.
@@ -11,11 +12,13 @@ def apply_cat_op(data, attrs, operation, prefix):
 
     return _data, new_attrs
 
+
 def apply_cat_ops(data, attrs, operations, prefixes):
     """
     Apply a bunch of operatins to data attributes.
     """
-    result = [apply_cat_op(data, attrs, operation, prefix) for (operation, prefix) in zip(operations, prefixes)]
+    result = [apply_cat_op(data, attrs, operation, prefix)
+              for (operation, prefix) in zip(operations, prefixes)]
     data_frames, akk = zip(*result)
 
     _data = pd.concat(data_frames, axis=1)

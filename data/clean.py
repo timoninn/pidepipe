@@ -3,9 +3,20 @@ import pandas as pd
 from scipy import stats
 
 
-# work correctly only without constant columns
 def remove_outliers_z(X, y=None, attrs=None, theshold=3):
+    """Remove outliers using z-score. Works correctly only without constant columns.
 
+    Arguments:
+        X {DataFrame} -- Data frame to clean.
+
+    Keyword Arguments:
+        y {DataFrame} -- Rows deleted as in X. (default: {None})
+        attrs {Array} -- Attributes to check outliers. (default: {None})
+        theshold {int} -- z-score treshold (default: {3})
+
+    Returns:
+        tuple -- Cleaned X, y.
+    """
     check_examples_count(X, y)
 
     print('Input data shape:' + str(X.shape))
