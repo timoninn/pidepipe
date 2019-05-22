@@ -21,7 +21,6 @@ def downaload(comp_name, path=None):
         path
     ]
 
-    print(args)
     subprocess.run(args)
 
     _extract_all_zip(path)
