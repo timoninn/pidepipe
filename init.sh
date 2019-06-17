@@ -5,7 +5,7 @@ echo "Initiate project"
 
 
 # Data
-mkdir -p data/{raw,interim/{train,dev,test},processed/{train,dev,test},submissions}
+mkdir -p data/{raw,interim/{train,dev,test},processed/{train,dev,test},submissions,external}
 
 
 # Docs
