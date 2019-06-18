@@ -1,10 +1,10 @@
 import numpy as np
-import pandas as pd
 from scipy import stats
 
 
 def remove_outliers_z(X, y=None, attrs=None, theshold=3):
-    """Remove outliers using z-score. Works correctly only without constant columns.
+    """Remove outliers using z-score.
+    Works correctly only without constant columns.
 
     Arguments:
         X {DataFrame} -- Data frame to clean.

@@ -18,7 +18,7 @@ def frequency_encoding():
 
 def one_hot_encoding(X, attrs=None, sparse=True, mode='train', path=None):
 
-    data = X if attrs == None else X[attrs]
+    data = X if attrs is None else X[attrs]
 
     print('One-hot encoding')
     print('Mode:', mode)

@@ -1,5 +1,5 @@
 import pandas as pd
-from scipy.sparse import csr_matrix, hstack, load_npz
+from scipy.sparse import hstack, load_npz
 
 
 def read_npz(paths):

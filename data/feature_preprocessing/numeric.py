@@ -5,9 +5,9 @@ import pandas as pd
 
 def standard_scale(X, attrs=None, mode='train', path=None):
 
-    _attrs = X.columns if attrs == None else attrs
+    _attrs = X.columns if attrs is None else attrs
 
-    data = X if attrs == None else X[_attrs]
+    data = X if attrs is None else X[_attrs]
 
     print('Standard scaling')
     print('Mode:', mode)
