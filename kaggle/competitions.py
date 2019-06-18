@@ -41,7 +41,7 @@ def _extract_zip(path, filename, ext):
     zip = zipfile.ZipFile(path / filename)
 
     if len(zip.namelist()) > 1:
-        zip.extractall(path / filename.replace(ext,''))
+        zip.extractall(path / filename.replace(ext, ''))
     else:
         zip.extractall(path)
 
