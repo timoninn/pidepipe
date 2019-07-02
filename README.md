@@ -6,3 +6,4 @@
 - [ ] Auto add gitignore
 - [ ] Auto setup Makefile
 - [ ] Track empty directories in files structure
+- [ ] Store all configs in code, not in config files because for each experiment not only config will be changed.

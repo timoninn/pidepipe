@@ -1,7 +1,12 @@
 import pandas as pd
 
 
-def apply_cat_op(data, attrs, operation, prefix):
+def apply_cat_op(
+    data: pd.DataFrame,
+    attrs: [str],
+    operation,
+    prefix: str
+):
     """
     Apply one operation to data attributes.
     """
@@ -13,10 +18,19 @@ def apply_cat_op(data, attrs, operation, prefix):
     return _data, new_attrs
 
 
-def apply_cat_ops(data, attrs, operations, prefixes):
+def apply_cat_ops(
+    data: pd.DataFrame,
+    attrs: [str],
+    operations: [],
+    prefixes: [str]
+):
     """
     Apply a bunch of operatins to data attributes.
     """
+
+    assert len(operations) == len(prefixes), \
+        'Number of prefixes not equal to number of operations'
+
     result = [apply_cat_op(data, attrs, operation, prefix)
               for (operation, prefix) in zip(operations, prefixes)]
     data_frames, akk = zip(*result)
