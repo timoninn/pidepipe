@@ -6,6 +6,10 @@ import torch
 from torch.optim.lr_scheduler import _LRScheduler
 import numpy as np
 
+from callback import Callback
+
+Scheduler = _LRScheduler
+
 class Runner():
     def __init__(
         self,
@@ -18,12 +22,13 @@ class Runner():
         self,
         model: nn.Module,
         criterion: nn.Module,
-        metric: nn.Module,
+        metrics: [nn.Module],
         optimizer: optim.Optimizer,
-        scheduler: _LRScheduler,
+        scheduler: Scheduler,
         loaders: {str: DataLoader},
         log_dir: str,
-        num_epochs: int
+        num_epochs: int,
+        callbacks: [Callback]
     ):
         model.to(self.device)
 
@@ -44,7 +49,10 @@ class Runner():
             num_batches = len(train_loader)
             tk = tqdm(train_loader, total=num_batches)
 
+            # Init metric/loss
             running_loss = 0.0
+
+
             for itr, batch in enumerate(tk):
 
                 # Train phase one batch
@@ -62,12 +70,14 @@ class Runner():
                 loss.backward()
                 optimizer.step()
 
-
+                # Update metric/loss
                 running_loss += loss.item()
 
                 tk.set_postfix({'loss': running_loss / (itr + 1)})
 
             # Train phase loss.
+
+            # Get current metric/loss value
             epoch_loss = running_loss / num_batches
             print(f'Loss: {epoch_loss:.4}')
 
@@ -125,7 +135,14 @@ class Runner():
 
 
 
-
+    def evaluate(
+        self,
+        model: nn.Module,
+        loader: DataLoader,
+        callbacks: [Callback],
+        checkpoint_path: str
+    ):
+        pass
 
 
 
