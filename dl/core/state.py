@@ -1,3 +1,3 @@
+from typing import Dict, Any, abstractmethod
 
-class State():
-    pass
+State = Dict[str, Any]

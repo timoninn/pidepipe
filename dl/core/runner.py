@@ -7,10 +7,13 @@ from torch.optim.lr_scheduler import _LRScheduler
 import numpy as np
 
 from callback import Callback
+from state import State
 
 Scheduler = _LRScheduler
 
+
 class Runner():
+
     def __init__(
         self,
         device=None
@@ -18,29 +21,84 @@ class Runner():
         self.device = device
         self.best_valid_loss = float('inf')
 
+        self.callbacks: [Callback] = None
+        self.state: State = None
+
+    def _run_event(self, name: str):
+
+        if self.callbacks is not None:
+            for callback in self.callbacks:
+                getattr(callback, f'on_{name}')(self.state)
+
+    def _run_train_batch(self, batch):
+        images, masks = batch
+
+        self.optimizer.zero_grad()
+
+        images = images.to(self.device)
+        masks = masks.to(self.device)
+
+        outputs = self.model(images)
+
+        loss = self.criterion(outputs, masks)
+
+        loss.backward()
+
+        self.optimizer.step()
+
+        return loss.intem()
+
+    def _run_valid_batch(self):
+        pass
+
+    def _run_epoch(self):
+        pass
+
+    def _run_phase(self):
+        pass
+
     def train(
         self,
         model: nn.Module,
+
         criterion: nn.Module,
         metrics: [nn.Module],
+
         optimizer: optim.Optimizer,
         scheduler: Scheduler,
+
         loaders: {str: DataLoader},
+
+        valid_loader: DataLoader,
+        train_loader: DataLoader,
+
         log_dir: str,
         num_epochs: int,
+
         callbacks: [Callback]
     ):
+
+
+
+        self.model = model
+        self.callbacks = callbacks
+        self.criterion = criterion
+        self.metrics = metrics
+        self.optimizer = optimizer
+
+
         model.to(self.device)
 
-
-
-
         for epoch in range(num_epochs):
-
 
             # One batch
 
             # Train phase
+
+            self._run_event('epoch_begin')
+
+            self._run_event('phase_begin')
+
             print(f'{epoch}/{num_epochs} Epoch {epoch} (train)')
 
             model.train()
@@ -52,27 +110,14 @@ class Runner():
             # Init metric/loss
             running_loss = 0.0
 
-
             for itr, batch in enumerate(tk):
+                self._run_event('batch_begin')
 
-                # Train phase one batch
-                images, masks = batch
+                loss = self._run_train_batch(batch)
 
-                optimizer.zero_grad()
+                running_loss += loss
 
-                images = images.to(self.device)
-                masks = masks.to(self.device)
-
-                outputs = model(images)
-
-                loss = criterion(outputs, masks)
-
-                loss.backward()
-                optimizer.step()
-
-                # Update metric/loss
-                running_loss += loss.item()
-
+                self._run_event('batch_end')
                 tk.set_postfix({'loss': running_loss / (itr + 1)})
 
             # Train phase loss.
@@ -80,8 +125,6 @@ class Runner():
             # Get current metric/loss value
             epoch_loss = running_loss / num_batches
             print(f'Loss: {epoch_loss:.4}')
-
-
 
             state = {
                 "epoch": epoch,
@@ -92,13 +135,12 @@ class Runner():
 
             torch.save(state, log_dir + 'last.pth')
 
-
-
-
-
-
+            self._run_event('phase_end')
 
             # Valid pahse
+
+            self._run_event('phase_begin')
+
             print(f'{epoch}/{num_epochs} Epoch {epoch} (valid)')
             with torch.no_grad():
                 model.eval()
@@ -110,6 +152,8 @@ class Runner():
                 running_loss = 0.0
 
                 for itr, batch in enumerate(tk):
+                    self._run_event('batch_begin')
+
                     # Valid phase one batch
 
                     images, masks = batch
@@ -123,6 +167,8 @@ class Runner():
 
                     running_loss += loss.item()
 
+                    self._run_event('batch_end')
+
             # Valid phase loss.
             epoch_loss = running_loss / num_batches
             print(f'Loss: {epoch_loss:.4}')
@@ -133,7 +179,9 @@ class Runner():
 
                 torch.save(state, log_dir + 'best.pth')
 
+            self._run_event('phase_end')
 
+            self._run_event('epoch_end')
 
     def evaluate(
         self,
@@ -143,8 +191,6 @@ class Runner():
         checkpoint_path: str
     ):
         pass
-
-
 
     def infer(
         self,
