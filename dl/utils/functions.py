@@ -1,4 +1,10 @@
 from torch import nn
+import torch
+
+
+def get_available_device() -> torch.device:
+
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def get_activation_func(name: str == 'none'):
