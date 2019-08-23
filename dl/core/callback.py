@@ -1,8 +1,7 @@
 
 from typing import Dict, Any, abstractmethod
 
-State = Dict[str, Any]
-
+from state import State
 
 class Callback:
 
@@ -25,34 +24,21 @@ class Callback:
         pass
 
 
+class EarlyStoppingCallback(Callback):
 
+    def __init__(
+        self,
+        monitor: str = 'val_loss', # train_dice
+        patience: int = 2
+    ):
+        pass
 
-    # def on_train_begin(self, state: State):
-    #     pass
+class CheckpointCallback(Callback):
 
-    # def on_train_end(self, state: State):
-    #     pass
-
-    # def on_train_batch_begin(self, state: State):
-    #     pass
-
-    # def on_train_batch_end(self, state: State):
-    #     pass
-
-    # def on_valid_begin(self, state: State):
-    #     pass
-
-    # def on_valid_end(self, state: State):
-    #     pass
-
-    # def on_valid_batch_begin(self, state: State):
-    #     pass
-
-    # def on_valid_batch_end(self, state: State):
-    #     pass
-
-    # def on_infer_batch_begin(self, state: State):
-    #     pass
-
-    # def on_infer_batch_end(self, state: State):
-    #     pass
+    def __init__(
+        self,
+        path: str,
+        save_n_best: int = 3,
+        monitor: str = 'train_loss',
+    ):
+        pass

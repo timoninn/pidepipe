@@ -20,10 +20,6 @@ class Runner():
         device: torch.device = None
     ):
         self.device = device if device is not None else get_available_device()
-
-        self.best_valid_loss = float('inf')
-
-        self.callbacks: [Callback] = None
         self.state: State = None
 
     def _run_epoch(self, epoch):
@@ -37,53 +33,36 @@ class Runner():
 
     def _run_train_phase(self, epoch: int):
 
+        self.state.phase = 'train'
+        self.state.epoch = epoch
+
         self._run_event('phase_begin')
 
-        print(f'{epoch}/{num_epochs} Epoch {epoch} (train)')
-
-        self.model.train()
+        self.state.model.train()
 
         num_batches = len(self.train_loader)
         tk = tqdm(self.train_loader, total=num_batches)
 
-        running_loss = 0.0
-
-        for itr, batch in enumerate(tk):
-            loss = self._run_train_batch(batch)
-            running_loss += loss
-            tk.set_postfix({'loss': running_loss / (itr + 1)})
-
-        epoch_loss = running_loss / num_batches
-        print(f'Loss: {epoch_loss:.4}')
-
-        self._save_state(epoch, epoch_loss, 'last.pth')
+        for batch in tk:
+            self._run_train_batch(batch)
 
         self._run_event('phase_end')
 
     def _run_valid_phase(self, epoch):
 
+        self.state.phase = 'valid'
+        self.state.epoch = epoch
+
         self._run_event('phase_begin')
 
-        print(f'{epoch}/{num_epochs} Epoch {epoch} (valid)')
         with torch.no_grad():
-            self.model.eval()
+            self.state.model.eval()
 
             num_batches = len(self.valid_loader)
             tk = tqdm(self.valid_loader, total=num_batches)
 
-            running_loss = 0.0
-            for itr, batch in enumerate(tk):
-                loss = self._run_valid_batch(batch)
-                running_loss += loss
-
-        epoch_loss = running_loss / num_batches
-        print(f'Loss: {epoch_loss:.4}')
-
-        if epoch_loss < self.best_valid_loss:
-            print('New optimal found. Saving state')
-            self.best_valid_loss = epoch_loss
-
-            self._save_state(epoch, epoch_loss, 'best.pth')
+            for batch in tk:
+                self._run_valid_batch(batch)
 
         self._run_event('phase_end')
 
@@ -93,19 +72,29 @@ class Runner():
 
         images, masks = batch
 
-        self.optimizer.zero_grad()
+        self.state.optimizer.zero_grad()
 
         images = images.to(self.device)
         masks = masks.to(self.device)
 
-        outputs = self.model(images)
-        loss = self.criterion(outputs, masks)
+        outputs = self.state.model(images)
+
+        self.state.input = images
+        self.state.target = masks
+        self.state.output = outputs
+
+        loss = self.state.criterion(outputs, masks)
+
         loss.backward()
-        self.optimizer.step()
+        self.state.optimizer.step()
 
         self._run_event('batch_end')
 
-        return loss.item()
+        self.state.meter.add_batch_value(
+            phase=self.state.phase,
+            metric_name='loss',
+            value=loss.value()
+        )
 
     def _run_valid_batch(self, batch):
 
@@ -116,29 +105,38 @@ class Runner():
         images = images.to(self.device)
         masks = masks.to(self.device)
 
-        outputs = self.model(images)
-        loss = self.criterion(outputs, masks)
+        outputs = self.state.model(images)
+
+        self.state.input = images
+        self.state.target = masks
+        self.state.output = outputs
+
+        loss = self.state.criterion(outputs, masks)
 
         self._run_event('batch_end')
 
-        return loss.item()
+        self.state.meter.add_batch_value(
+            phase=self.state.phase,
+            metric_name='loss',
+            value=loss.value()
+        )
 
     def _run_event(self, name: str):
 
-        if self.callbacks is not None:
-            for callback in self.callbacks:
+        if self.state.callbacks is not None:
+            for callback in self.state.callbacks:
                 getattr(callback, f'on_{name}')(self.state)
 
-    def _save_state(self, epoch: int, epoch_loss: float, name: str):
+    # def _save_state(self, epoch: int, epoch_loss: float, name: str):
 
-        state = {
-            "epoch": epoch,
-            "loss": epoch_loss,
-            "model_state_dict": self.model.state_dict(),
-            "optimizer_state_dict": self.optimizer.state_dict(),
-        }
+    #     state = {
+    #         "epoch": epoch,
+    #         "loss": epoch_loss,
+    #         "model_state_dict": self.model.state_dict(),
+    #         "optimizer_state_dict": self.optimizer.state_dict(),
+    #     }
 
-        torch.save(state, self.log_dir + name)
+    #     torch.save(state, self.log_dir + name)
 
     def train(
         self,
@@ -163,17 +161,26 @@ class Runner():
         self.train_loader = train_loader
         self.valid_loader = valid_loader
 
-        self.model = model
-        self.callbacks = callbacks
-        self.criterion = criterion
-        self.metrics = metrics
-        self.optimizer = optimizer
-
-        self.log_dir = log_dir
-
         model.to(self.device)
 
+        self.state = State(
+            phase=None,
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            criterion=criterion,
+            metrics=metrics,
+            log_dir=log_dir,
+            epoch=0,
+            num_epochs=num_epochs,
+            callbacks=callbacks,
+            stop_train=False
+        )
+
         for epoch in range(num_epochs):
+            if self.state.stop_train:
+                break
+
             self._run_epoch(epoch)
 
     def evaluate(
