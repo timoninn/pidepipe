@@ -32,34 +32,34 @@ class Runner():
         self._run_event('epoch_end')
 
     def _run_train_phase(self, epoch: int):
-
         self.state.phase = 'train'
         self.state.epoch = epoch
+        self.state.num_batches = len(self.valid_loader)
+
         self.state.model.train()
 
         self._run_event('phase_begin')
 
-        num_batches = len(self.train_loader)
-        tk = tqdm(self.train_loader, total=num_batches)
+        for idx, batch in enumerate(self.train_loader):
+            self.state.batch_idx = idx
 
-        for batch in tk:
             self._run_train_batch(batch)
 
         self._run_event('phase_end')
 
     def _run_valid_phase(self, epoch):
-
         self.state.phase = 'valid'
         self.state.epoch = epoch
+        self.state.num_batches = len(self.valid_loader)
+
         self.state.model.eval()
 
         self._run_event('phase_begin')
 
         with torch.no_grad():
-            num_batches = len(self.valid_loader)
-            tk = tqdm(self.valid_loader, total=num_batches)
+            for idx, batch in enumerate(self.train_loader):
+                self.state.batch_idx = idx
 
-            for batch in tk:
                 self._run_valid_batch(batch)
 
         self._run_event('phase_end')
@@ -114,7 +114,7 @@ class Runner():
         self.state.meter.add_batch_value(
             phase=self.state.phase,
             metric_name='loss',
-            value=loss.value()
+            value=loss.item()
         )
 
         self._run_event('batch_end')

@@ -28,7 +28,7 @@ class State:
         stop_train: bool = False
     ):
 
-        self.phase = phase
+        self.phase: str = phase
 
         self.model = model
         self.optimizer = optimizer
@@ -36,12 +36,15 @@ class State:
         self.criterion = criterion
         self.metrics = metrics
 
-        self.log_dir = log_dir
+        self.log_dir: str = log_dir
 
-        self.epoch = epoch
-        self.num_epochs = num_epochs
+        self.epoch: int = epoch
+        self.num_epochs: int = num_epochs
 
-        self.stop_train = stop_train
+        self.batch_idx: int = None
+        self.num_batches: int = None
+
+        self.stop_train: bool = stop_train
 
         self.input = None
         self.target = None

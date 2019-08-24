@@ -27,10 +27,10 @@ class Callback:
 class LoggingCallback(Callback):
 
     def on_epoch_begin(self, state: State):
-        print(f'{state.epoch} / {state.num_epochs} Begin epoch ({state.phase})')
+        print(f'{state.epoch + 1} / {state.num_epochs} Begin epoch')
 
     def on_epoch_end(self, state: State):
-        print(f'{state.epoch} / {state.num_epochs} End epoch ({state.phase})')
+        print(f'{state.epoch + 1} / {state.num_epochs} End epoch')
 
     def on_phase_begin(self, state: State):
         print(f'Begin {state.phase} phase')
