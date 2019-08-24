@@ -23,7 +23,6 @@ class Runner():
         self.state: State = None
 
     def _run_epoch(self, epoch):
-
         self._run_event('epoch_begin')
 
         self._run_train_phase(epoch)
@@ -36,6 +35,7 @@ class Runner():
         self.state.epoch = epoch
         self.state.num_batches = len(self.valid_loader)
 
+        self.state.meter.begin_epoch()
         self.state.model.train()
 
         self._run_event('phase_begin')
@@ -45,6 +45,8 @@ class Runner():
 
             self._run_train_batch(batch)
 
+        self.state.meter.end_epoch()
+
         self._run_event('phase_end')
 
     def _run_valid_phase(self, epoch):
@@ -52,6 +54,7 @@ class Runner():
         self.state.epoch = epoch
         self.state.num_batches = len(self.valid_loader)
 
+        self.state.meter.begin_epoch()
         self.state.model.eval()
 
         self._run_event('phase_begin')
@@ -62,10 +65,11 @@ class Runner():
 
                 self._run_valid_batch(batch)
 
+        self.state.meter.end_epoch()
+
         self._run_event('phase_end')
 
     def _run_train_batch(self, batch):
-
         self._run_event('batch_begin')
 
         images, masks = batch
@@ -95,7 +99,6 @@ class Runner():
         self._run_event('batch_end')
 
     def _run_valid_batch(self, batch):
-
         self._run_event('batch_begin')
 
         images, masks = batch
@@ -120,7 +123,6 @@ class Runner():
         self._run_event('batch_end')
 
     def _run_event(self, name: str):
-
         if self.callbacks is not None:
             for callback in self.callbacks:
                 getattr(callback, f'on_{name}')(self.state)

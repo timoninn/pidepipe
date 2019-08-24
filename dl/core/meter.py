@@ -18,7 +18,7 @@ class MetricManager:
         self._meter.reset()
 
     def end_epoch(self):
-        current_epoch_value = self._meter.value[0]
+        current_epoch_value = self._meter.value()[0]
         self._all_epoch_values.append(current_epoch_value)
 
     @property
@@ -79,7 +79,7 @@ class MetricsManager:
 class Meter:
 
     def __init__(self):
-        self._manages: Dict[str, MetricsManager] = defaultdict(MetricsManager)
+        self._managers: Dict[str, MetricsManager] = defaultdict(MetricsManager)
 
     def add_batch_value(
         self,
@@ -87,7 +87,7 @@ class Meter:
         metric_name: str,
         value: float
     ):
-        self._manages[phase].add_batch_value(metric_name, value)
+        self._managers[phase].add_batch_value(metric_name, value)
 
     def begin_epoch(self):
         for manager in self._managers.values():
