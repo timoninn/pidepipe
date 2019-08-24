@@ -4,9 +4,8 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import _LRScheduler
 
+from .meter import Meter
 
-from callback import Callback
-from meter import Meter
 
 class State:
 
@@ -26,10 +25,9 @@ class State:
         epoch: int,
         num_epochs: int,
 
-        callbacks: [Callback],
-
         stop_train: bool = False
     ):
+
         self.phase = phase
 
         self.model = model
@@ -43,8 +41,6 @@ class State:
         self.epoch = epoch
         self.num_epochs = num_epochs
 
-        self.callbacks = callbacks
-
         self.stop_train = stop_train
 
         self.input = None
@@ -53,5 +49,3 @@ class State:
         self.output = None
 
         self.meter = Meter()
-
-

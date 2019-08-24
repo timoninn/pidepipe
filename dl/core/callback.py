@@ -1,7 +1,6 @@
-
 from typing import Dict, Any, abstractmethod
 
-from state import State
+from .state import State
 
 
 class Callback:
@@ -28,10 +27,10 @@ class Callback:
 class LoggingCallback(Callback):
 
     def on_epoch_begin(self, state: State):
-        print(f'{state.epoch} / {state.num_epoch} Begin epoch ({state.phase})')
+        print(f'{state.epoch} / {state.num_epochs} Begin epoch ({state.phase})')
 
     def on_epoch_end(self, state: State):
-        print(f'{state.epoch} / {state.num_epoch} End epoch ({state.phase})')
+        print(f'{state.epoch} / {state.num_epochs} End epoch ({state.phase})')
 
     def on_phase_begin(self, state: State):
         print(f'Begin {state.phase} phase')
@@ -66,6 +65,17 @@ class CheckpointCallback(Callback):
     ):
         self.monitor = Monitor(monitor)
 
+
+    # def _save_state(self, epoch: int, epoch_loss: float, name: str):
+
+    #     state = {
+    #         "epoch": epoch,
+    #         "loss": epoch_loss,
+    #         "model_state_dict": self.model.state_dict(),
+    #         "optimizer_state_dict": self.optimizer.state_dict(),
+    #     }
+
+    #     torch.save(state, self.log_dir + name)
 
 class Monitor:
 

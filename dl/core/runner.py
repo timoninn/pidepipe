@@ -6,8 +6,8 @@ import torch
 from torch.optim.lr_scheduler import _LRScheduler
 import numpy as np
 
-from callback import Callback
-from state import State
+from .callback import Callback
+from .state import State
 from ..utils.functions import get_available_device
 
 Scheduler = _LRScheduler
@@ -89,7 +89,7 @@ class Runner():
         self.state.meter.add_batch_value(
             phase=self.state.phase,
             metric_name='loss',
-            value=loss.value()
+            value=loss.item()
         )
 
         self._run_event('batch_end')
@@ -121,32 +121,18 @@ class Runner():
 
     def _run_event(self, name: str):
 
-        if self.state.callbacks is not None:
-            for callback in self.state.callbacks:
+        if self.callbacks is not None:
+            for callback in self.callbacks:
                 getattr(callback, f'on_{name}')(self.state)
-
-    # def _save_state(self, epoch: int, epoch_loss: float, name: str):
-
-    #     state = {
-    #         "epoch": epoch,
-    #         "loss": epoch_loss,
-    #         "model_state_dict": self.model.state_dict(),
-    #         "optimizer_state_dict": self.optimizer.state_dict(),
-    #     }
-
-    #     torch.save(state, self.log_dir + name)
 
     def train(
         self,
         model: nn.Module,
 
         criterion: nn.Module,
-        metrics: [nn.Module],
 
         optimizer: optim.Optimizer,
         scheduler: Scheduler,
-
-        loaders: {str: DataLoader},
 
         valid_loader: DataLoader,
         train_loader: DataLoader,
@@ -159,6 +145,8 @@ class Runner():
         self.train_loader = train_loader
         self.valid_loader = valid_loader
 
+        self.callbacks = callbacks
+
         model.to(self.device)
 
         self.state = State(
@@ -167,11 +155,10 @@ class Runner():
             optimizer=optimizer,
             scheduler=scheduler,
             criterion=criterion,
-            metrics=metrics,
+            metrics=[],
             log_dir=log_dir,
             epoch=0,
             num_epochs=num_epochs,
-            callbacks=callbacks,
             stop_train=False
         )
 

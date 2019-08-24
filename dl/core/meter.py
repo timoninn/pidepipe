@@ -73,7 +73,7 @@ class MetricsManager:
         metric_name: str,
         minimize: bool
     ) -> float:
-        return self._managers[metric_name].get_best_epoch_value(minimize: minimize)
+        return self._managers[metric_name].get_best_epoch_value(minimize=minimize)
 
 
 class Meter:
@@ -118,6 +118,6 @@ class Meter:
         minimize: bool
     ) -> float:
         return self._managers[phase].get_best_epoch_value(
-            metric_name: metric_name
-            minimize: minimize
+            metric_name=metric_name,
+            minimize=minimize
         )
