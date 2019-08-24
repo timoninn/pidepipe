@@ -30,7 +30,7 @@ class LoggingCallback(Callback):
             metric_name='loss'
         )
 
-        print(f'Loss: {loss}\n')
+        print(f'Loss: {loss}')
 
     def on_batch_begin(self, state: State):
         pass

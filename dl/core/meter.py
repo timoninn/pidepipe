@@ -122,6 +122,26 @@ class Meter:
             minimize=minimize
         )
 
+    def is_last_epoch_value_best(
+        self,
+        phase: str,
+        metric_name: str,
+        minimize: bool
+    ) -> bool:
+        last = self.get_last_epoch_value(
+            phase=phase,
+            metric_name=metric_name
+        )
+
+        best = self.get_best_epoch_value(
+            phase=phase,
+            metric_name=metric_name,
+            minimize=minimize
+        )
+
+        return last==best
+
+
 
 class Monitor:
 
