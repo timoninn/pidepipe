@@ -35,10 +35,9 @@ class Runner():
 
         self.state.phase = 'train'
         self.state.epoch = epoch
+        self.state.model.train()
 
         self._run_event('phase_begin')
-
-        self.state.model.train()
 
         num_batches = len(self.train_loader)
         tk = tqdm(self.train_loader, total=num_batches)
@@ -52,12 +51,11 @@ class Runner():
 
         self.state.phase = 'valid'
         self.state.epoch = epoch
+        self.state.model.eval()
 
         self._run_event('phase_begin')
 
         with torch.no_grad():
-            self.state.model.eval()
-
             num_batches = len(self.valid_loader)
             tk = tqdm(self.valid_loader, total=num_batches)
 
@@ -88,13 +86,13 @@ class Runner():
         loss.backward()
         self.state.optimizer.step()
 
-        self._run_event('batch_end')
-
         self.state.meter.add_batch_value(
             phase=self.state.phase,
             metric_name='loss',
             value=loss.value()
         )
+
+        self._run_event('batch_end')
 
     def _run_valid_batch(self, batch):
 
@@ -113,13 +111,13 @@ class Runner():
 
         loss = self.state.criterion(outputs, masks)
 
-        self._run_event('batch_end')
-
         self.state.meter.add_batch_value(
             phase=self.state.phase,
             metric_name='loss',
             value=loss.value()
         )
+
+        self._run_event('batch_end')
 
     def _run_event(self, name: str):
 
