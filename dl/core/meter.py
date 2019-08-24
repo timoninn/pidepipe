@@ -121,3 +121,13 @@ class Meter:
             metric_name=metric_name,
             minimize=minimize
         )
+
+
+class Monitor:
+
+    def __init__(self, str: str):
+        components = str.split('_')
+
+        self.str = str
+        self.phase = components[0]
+        self.metric_name = components[1]
