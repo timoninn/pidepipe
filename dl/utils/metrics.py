@@ -12,6 +12,8 @@ class DiceMetric(nn.Module):
         eps: float = 1e-7,
         activation: str = 'sigmoid'
     ):
+        super().__init__()
+
         self.threshold = threshold
         self.eps = eps
         self.activation = activation
@@ -24,7 +26,7 @@ class DiceMetric(nn.Module):
         return dice(
             logits=logits,
             target=target,
-            # threshold=self.threshold,
+            threshold=self.threshold,
             eps=self.eps,
             activation=self.activation
         )

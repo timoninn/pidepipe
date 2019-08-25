@@ -11,6 +11,8 @@ class DiceLoss(nn.Module):
         eps: float = 1e-7,
         activation: str = 'sigmoid'
     ):
+        super().__init__()
+
         self.eps = eps
         self.activation = activation
 
