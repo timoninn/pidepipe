@@ -12,13 +12,22 @@ class CheckpointCallback(Callback):
     def __init__(
         self,
         path: str,
-        save_n_best: int = 3,
-        monitor: str = 'train_loss'
+        save_n_best: int = 1,
+        monitor: str = 'train_loss',
+        minimize: bool = True
     ):
         self.path = Path(path)
         self.save_n_best = save_n_best
+        self.minimize = minimize
 
         self.monitor = Monitor(monitor)
+
+    def is_last_value_best(self, state: State):
+        return state.meter.is_last_epoch_value_best(
+            phase=self.monitor.phase,
+            metric_name=self.monitor.metric_name,
+            minimize=self.minimize
+        )
 
     def _save_state(self, state: State, name: str):
         last_loss = state.meter.get_last_epoch_value(
@@ -39,7 +48,7 @@ class CheckpointCallback(Callback):
         pass
 
     def on_epoch_end(self, state: State):
-        if state.meter.is_last_epoch_value_best:
+        if self.is_last_value_best(state):
             print('Last value is best')
             self._save_state(state, 'best.pt')
 

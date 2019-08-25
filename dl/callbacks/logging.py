@@ -25,12 +25,13 @@ class LoggingCallback(Callback):
         self.tqdm.close()
         self.tqdm = None
 
-        loss = state.meter.get_last_epoch_value(
-            phase=state.phase,
-            metric_name='loss'
-        )
+        for name in state.meter.get_all_metric_names(state.phase):
+            value = state.meter.get_last_epoch_value(
+                phase=state.phase,
+                metric_name=name
+            )
 
-        print(f'Loss: {loss}')
+            print(f'{state.phase}_{name}: {value}')
 
     def on_batch_begin(self, state: State):
         pass

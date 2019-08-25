@@ -1,6 +1,7 @@
-import torch.nn as nn
 import torch
-from functions import dice
+import torch.nn as nn
+
+from .functions import dice
 
 
 class DiceLoss(nn.Module):

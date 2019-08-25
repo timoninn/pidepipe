@@ -1,6 +1,7 @@
-import torch.nn as nn
 import torch
-from functions import dice
+import torch.nn as nn
+
+from .functions import dice
 
 
 class DiceMetric(nn.Module):
@@ -23,7 +24,7 @@ class DiceMetric(nn.Module):
         return dice(
             logits=logits,
             target=target,
-            threshold=self.threshold,
+            # threshold=self.threshold,
             eps=self.eps,
             activation=self.activation
         )

@@ -23,6 +23,7 @@ class Runner():
         self.state: State = None
 
     def _run_epoch(self, epoch):
+
         self._run_event('epoch_begin')
 
         self._run_train_phase(epoch)
@@ -35,7 +36,7 @@ class Runner():
         self.state.epoch = epoch
         self.state.num_batches = len(self.valid_loader)
 
-        self.state.meter.begin_epoch()
+        self.state.meter.begin_phase(phase='train')
         self.state.model.train()
 
         self._run_event('phase_begin')
@@ -45,7 +46,7 @@ class Runner():
 
             self._run_train_batch(batch)
 
-        self.state.meter.end_epoch()
+        self.state.meter.end_phase(phase='train')
 
         self._run_event('phase_end')
 
@@ -54,7 +55,7 @@ class Runner():
         self.state.epoch = epoch
         self.state.num_batches = len(self.valid_loader)
 
-        self.state.meter.begin_epoch()
+        self.state.meter.begin_phase(phase='valid')
         self.state.model.eval()
 
         self._run_event('phase_begin')
@@ -65,7 +66,7 @@ class Runner():
 
                 self._run_valid_batch(batch)
 
-        self.state.meter.end_epoch()
+        self.state.meter.end_phase(phase='valid')
 
         self._run_event('phase_end')
 
