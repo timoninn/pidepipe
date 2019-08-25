@@ -22,7 +22,7 @@ class CheckpointCallback(Callback):
 
         self.monitor = Monitor(monitor)
 
-    def is_last_value_best(self, state: State):
+    def _is_last_value_best(self, state: State):
         return state.meter.is_last_epoch_value_best(
             phase=self.monitor.phase,
             metric_name=self.monitor.metric_name,
@@ -48,7 +48,7 @@ class CheckpointCallback(Callback):
         pass
 
     def on_epoch_end(self, state: State):
-        if self.is_last_value_best(state):
+        if self._is_last_value_best(state):
             print('Last value is best')
             self._save_state(state, 'best.pt')
 
