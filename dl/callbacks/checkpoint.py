@@ -1,3 +1,4 @@
+from typing import Dict, Any
 from pathlib import Path
 
 import torch
@@ -12,12 +13,10 @@ class CheckpointCallback(Callback):
     def __init__(
         self,
         path: str,
-        save_n_best: int = 1,
         monitor: str = 'train_loss',
         minimize: bool = True
     ):
         self.path = Path(path)
-        self.save_n_best = save_n_best
         self.minimize = minimize
 
         self.monitor = Monitor(monitor)
@@ -49,10 +48,49 @@ class CheckpointCallback(Callback):
 
     def on_epoch_end(self, state: State):
         if self._is_last_value_best(state):
-            print('Last value is best')
+            print('Saving state')
             self._save_state(state, 'best.pt')
 
         self._save_state(state, 'last.pt')
+
+    def on_phase_begin(self, state: State):
+        pass
+
+    def on_phase_end(self, state: State):
+        pass
+
+    def on_batch_begin(self, state: State):
+        pass
+
+    def on_batch_end(self, state: State):
+        pass
+
+
+class LoadCheckpointCallback(Callback):
+
+    def __init__(
+        self,
+        path: str
+    ):
+        self.path = Path(path)
+
+    def _load(self) -> Dict[str, Any]:
+        return torch.load(self.path)
+
+    def on_begin(self, state: State):
+        checkpoint = self._load()
+
+        state.model.load_state_dict(checkpoint['model_state_dict'])
+        state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    def on_end(self, state: State):
+        pass
+
+    def on_epoch_begin(self, state: State):
+        pass
+
+    def on_epoch_end(self, state: State):
+        pass
 
     def on_phase_begin(self, state: State):
         pass

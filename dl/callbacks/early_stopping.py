@@ -6,7 +6,7 @@ class EarlyStoppingCallback(Callback):
 
     def __init__(
         self,
-        monitor: str = 'val_loss',  # train_dice
-        patience: int = 2
+        monitor: str = 'val_loss',
+        patience: int = 3
     ):
         pass

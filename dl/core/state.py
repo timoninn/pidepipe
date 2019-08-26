@@ -11,40 +11,32 @@ class State:
 
     def __init__(
         self,
-        phase: str,
 
         model: nn.Module,
         optimizer: optim.Optimizer,
         scheduler: _LRScheduler,
-
         criterion: nn.Module,
-        metrics: [nn.Module],
-
-        log_dir: str,
 
         epoch: int,
         num_epochs: int,
 
-        stop_train: bool = False
+        log_dir: str = None
     ):
-
-        self.phase: str = phase
-
         self.model = model
         self.optimizer = optimizer
-
+        self.scheduler = scheduler
         self.criterion = criterion
-        self.metrics = metrics
-
-        self.log_dir: str = log_dir
 
         self.epoch: int = epoch
         self.num_epochs: int = num_epochs
 
+        self.log_dir: str = log_dir
+
+        self.phase: str = None
+        self.stop_train: bool = False
+
         self.batch_idx: int = None
         self.num_batches: int = None
-
-        self.stop_train: bool = stop_train
 
         self.input = None
         self.target = None
@@ -52,3 +44,8 @@ class State:
         self.output = None
 
         self.meter = Meter()
+
+    @property
+    def is_train_phase(self) -> bool:
+        return (self.phase == 'train')
+

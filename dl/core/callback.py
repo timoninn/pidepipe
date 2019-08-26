@@ -5,6 +5,12 @@ from .state import State
 
 class Callback:
 
+    def on_begin(self, state: State):
+        pass
+
+    def on_end(self, state: State):
+        pass
+
     def on_epoch_begin(self, state: State):
         pass
 
