@@ -12,6 +12,7 @@ class MetricManager:
         self._all_epoch_values: [float] = []
 
     def add_batch_value(self, value: float):
+        # Set correct n to avoid batch size influence on mean value
         self._meter.add(value)
 
     def begin_epoch(self):

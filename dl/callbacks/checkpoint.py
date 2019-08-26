@@ -80,10 +80,21 @@ class LoadCheckpointCallback(Callback):
     def on_begin(self, state: State):
         checkpoint = self._load()
 
+        print('Load checkpoint')
+
         state.model.load_state_dict(checkpoint['model_state_dict'])
 
         if state.optimizer is not None:
             state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            # Fix optimizer loading 1
+            # for state in state.optimizer.state.values():
+            #     for k, v in state.items():
+            #         if isinstance(v, torch.Tensor):
+            #             state[k] = v.cuda()
+
+            # Fix optimizer loading 2
+            # Model to device before optimizer creation
 
     def on_end(self, state: State):
         pass

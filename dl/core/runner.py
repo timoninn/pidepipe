@@ -25,9 +25,11 @@ class Runner():
         self.state: State = None
 
     def _run(self):
-        self._run_event('begin')
-
+        # Fix optimizer loading 3
+        # Model to device before optimizer loading state dict
         self.state.model.to(self.device)
+
+        self._run_event('begin')
 
         for epoch in range(self.state.num_epochs):
             self._run_epoch(epoch)
@@ -159,7 +161,7 @@ class Runner():
 
         self._run()
 
-    def infer(
+    def eval(
         self,
         model: nn.Module,
         loader: DataLoader,
