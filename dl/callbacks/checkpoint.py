@@ -81,7 +81,9 @@ class LoadCheckpointCallback(Callback):
         checkpoint = self._load()
 
         state.model.load_state_dict(checkpoint['model_state_dict'])
-        state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        if state.optimizer is not None:
+            state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
     def on_end(self, state: State):
         pass

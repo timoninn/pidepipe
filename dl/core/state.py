@@ -49,3 +49,7 @@ class State:
     def is_train_phase(self) -> bool:
         return (self.phase == 'train')
 
+    @property
+    def is_infer_phase(self) -> bool:
+        return (self.phase == 'infer')
+
