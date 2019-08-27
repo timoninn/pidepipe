@@ -98,7 +98,8 @@ class Runner():
             self.state.meter.add_batch_value(
                 phase=self.state.phase,
                 metric_name='loss',
-                value=loss.item()
+                value=loss.item(),
+                batch_size=self.state.input.size(0)
             )
 
             if self.state.is_train_phase:

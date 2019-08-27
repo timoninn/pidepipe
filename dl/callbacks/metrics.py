@@ -38,7 +38,8 @@ class MetricsCallback(Callback):
             state.meter.add_batch_value(
                 phase=state.phase,
                 metric_name=name,
-                value=value.item()
+                value=value.item(),
+                batch_size=state.input.size(0)
             )
 
 

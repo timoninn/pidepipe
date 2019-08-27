@@ -8,19 +8,18 @@ from torchnet.meter import AverageValueMeter
 class MetricManager:
 
     def __init__(self):
-        self._meter = AverageValueMeter()
+        self._meter = AverageMeter()
         self._all_epoch_values: [float] = []
 
-    def add_batch_value(self, value: float):
+    def add_batch_value(self, value: float, batch_size: int):
         # Set correct n to avoid batch size influence on mean value
-        self._meter.add(value)
+        self._meter.add(value, n=batch_size)
 
     def begin_epoch(self):
         self._meter.reset()
 
     def end_epoch(self):
-        current_epoch_value = self._meter.value()
-        self._all_epoch_values.append(current_epoch_value[0])
+        self._all_epoch_values.append(self._meter.value())
 
     @property
     def last_epoch_value(self):
@@ -49,9 +48,10 @@ class MetricsManager:
     def add_batch_value(
         self,
         metric_name: str,
-        value: float
+        value: float,
+        batch_size: int
     ):
-        self._managers[metric_name].add_batch_value(value)
+        self._managers[metric_name].add_batch_value(value, batch_size=batch_size)
 
     def begin_epoch(self):
         for manager in self._managers.values():
@@ -96,9 +96,14 @@ class Meter:
         self,
         phase: str,
         metric_name: str,
-        value: float
+        value: float,
+        batch_size: int
     ):
-        self._managers[phase].add_batch_value(metric_name, value)
+        self._managers[phase].add_batch_value(
+            metric_name=metric_name,
+            value=value,
+            batch_size=batch_size
+        )
 
     def begin_phase(
         self,
@@ -169,3 +174,20 @@ class Monitor:
         self.str = str
         self.phase = components[0]
         self.metric_name = components[1]
+
+
+class AverageMeter(object):
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.sum = 0.0
+        self.count = 0
+
+    def add(self, value: float, n: int):
+        self.sum += (value * n)
+        self.count += n
+
+    def value(self):
+        return self.sum / self.count

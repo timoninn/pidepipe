@@ -27,13 +27,16 @@ def dice(
     target: torch.Tensor,
     threshold: float = None,
     eps: float = 1e-7,
-    activation: str = 'sigmoid'
+    activation: str = 'sigmoid',
+    reduction: str = 'mean'
 ) -> float:
     """Calculate dise loss.
 
     Arguments:
-        logits {torch.Tensor} -- Predicted logits
-        target {torch.Tensor} -- Target
+        logits {torch.Tensor} -- Predicted logits. Shape (N, ...)
+        target {torch.Tensor} -- Target. Shape (N, ...)
+
+        N - batch size
 
     Keyword Arguments:
         threshold {float} -- Threshold for output binarization (default: None)
@@ -44,15 +47,32 @@ def dice(
     Returns:
         float -- Dice score
     """
+    batch_size = logits.size(0)
+
     activation_func = get_activation_func(activation)
     predicted = activation_func(logits)
 
     if threshold is not None:
         predicted = (predicted > threshold).float()
 
-    intersection = torch.sum(predicted * target)
-    union = torch.sum(predicted) + torch.sum(target)
 
-    dice = 2.0 * intersection / (union + eps)
+    sum_dice = 0.0
+    for p, t in zip(predicted, target):
+        intersection = torch.sum(p * t)
+        union = torch.sum(p) + torch.sum(t)
+        dice = 2.0 * intersection / (union + eps)
 
-    return dice
+        sum_dice += dice
+
+    if reduction == 'none':
+        result = sum_dice
+
+    elif reduction == 'mean':
+        result = sum_dice / batch_size
+
+    else:
+        raise NotImplementedError(
+            'Only "none" and "mean" reductions were implemented'
+        )
+
+    return result

@@ -9,12 +9,14 @@ class DiceLoss(nn.Module):
     def __init__(
         self,
         eps: float = 1e-7,
-        activation: str = 'sigmoid'
+        activation: str = 'sigmoid',
+        reduction: str = 'mean'
     ):
         super().__init__()
 
         self.eps = eps
         self.activation = activation
+        self.reduction = reduction
 
     def forward(
         self,
@@ -25,7 +27,8 @@ class DiceLoss(nn.Module):
             logits=logits,
             target=target,
             eps=self.eps,
-            activation=self.activation
+            activation=self.activation,
+            reduction=self.reduction
         )
 
 
