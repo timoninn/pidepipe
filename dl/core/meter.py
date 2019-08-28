@@ -2,7 +2,6 @@ from typing import Any, Dict
 from collections import defaultdict
 
 from torch import nn
-from torchnet.meter import AverageValueMeter
 
 
 class MetricManager:
@@ -10,10 +9,13 @@ class MetricManager:
     def __init__(self):
         self._meter = AverageMeter()
         self._all_epoch_values: [float] = []
+        self._last_batch_value: float = None
 
     def add_batch_value(self, value: float, batch_size: int):
         # Set correct n to avoid batch size influence on mean value
         self._meter.add(value, n=batch_size)
+
+        self._last_batch_value = value
 
     def begin_epoch(self):
         self._meter.reset()
@@ -22,7 +24,11 @@ class MetricManager:
         self._all_epoch_values.append(self._meter.value())
 
     @property
-    def last_epoch_value(self):
+    def last_batch_value(self) -> float:
+        return self._last_batch_value
+
+    @property
+    def last_epoch_value(self) -> float:
         return self._all_epoch_values[-1]
 
     @property
@@ -51,7 +57,10 @@ class MetricsManager:
         value: float,
         batch_size: int
     ):
-        self._managers[metric_name].add_batch_value(value, batch_size=batch_size)
+        self._managers[metric_name].add_batch_value(
+            value=value,
+            batch_size=batch_size
+        )
 
     def begin_epoch(self):
         for manager in self._managers.values():
@@ -60,6 +69,15 @@ class MetricsManager:
     def end_epoch(self):
         for manager in self._managers.values():
             manager.end_epoch()
+
+    def get_last_batch_value(
+        self,
+        metric_name: str
+    ) -> float:
+        return self._managers[metric_name].last_batch_value
+
+    def get_all_last_batch_values(self) -> Dict[str, float]:
+        return { k: self.get_last_batch_value(k) for k in self.metric_names }
 
     def get_last_epoch_value(
         self,
@@ -117,6 +135,19 @@ class Meter:
     ):
         self._managers[phase].end_epoch()
 
+    def get_last_batch_value(
+        self,
+        phase: str,
+        metric_name: str
+    ) -> float:
+        return self._managers[phase].get_last_batch_value(metric_name)
+
+    def get_all_last_batch_values(
+        self,
+        phase: str
+    ) -> Dict[str, float]:
+        return self._managers[phase].get_all_last_batch_values()
+
     def get_last_epoch_value(
         self,
         phase: str,
@@ -159,11 +190,7 @@ class Meter:
             minimize=minimize
         )
 
-        # print(f'Last: {last}')
-        # print(f'Best: {best}')
-
-        return last==best
-
+        return last == best
 
 
 class Monitor:

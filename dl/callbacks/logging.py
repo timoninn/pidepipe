@@ -37,4 +37,9 @@ class LoggingCallback(Callback):
         pass
 
     def on_batch_end(self, state: State):
+        values = state.meter.get_all_last_batch_values(
+            phase=phase
+        )
+
+        self.tqdm.set_postfix(values)
         self.tqdm.update()
