@@ -28,6 +28,10 @@ class MetricManager:
         return self._last_batch_value
 
     @property
+    def current_epoch_value(self) -> float:
+        return self._meter.value()
+
+    @property
     def last_epoch_value(self) -> float:
         return self._all_epoch_values[-1]
 
@@ -57,7 +61,7 @@ class MetricsManager:
         value: float,
         batch_size: int
     ):
-        self._managers[metric_name].add_batch_value(
+        self._get_manager(metric_name).add_batch_value(
             value=value,
             batch_size=batch_size
         )
@@ -74,29 +78,42 @@ class MetricsManager:
         self,
         metric_name: str
     ) -> float:
-        return self._managers[metric_name].last_batch_value
+        return self._get_manager(metric_name).last_batch_value
 
     def get_all_last_batch_values(self) -> Dict[str, float]:
-        return { k: self.get_last_batch_value(k) for k in self.metric_names }
+        return {k: self.get_last_batch_value(k) for k in self.metric_names}
+
+    def get_current_epoch_value(
+        self,
+        metric_name: str
+    ) -> float:
+        return self._get_manager(metric_name).current_epoch_value
+
+    @property
+    def current_epoch_metrics_values(self) -> Dict[str, float]:
+        return {k: self.get_current_epoch_value(k) for k in self.metric_names}
 
     def get_last_epoch_value(
         self,
         metric_name: str
     ) -> float:
-        return self._managers[metric_name].last_epoch_value
+        return self._get_manager(metric_name).last_epoch_value
 
-    def get_all_epoch_values(
+    def get_all_epochs_values(
         self,
         metric_name: str
     ) -> [float]:
-        return self._managers[metric_name].all_epoch_values
+        return self._get_manager(metric_name).all_epoch_values
 
     def get_best_epoch_value(
         self,
         metric_name: str,
         minimize: bool
     ) -> float:
-        return self._managers[metric_name].get_best_epoch_value(minimize=minimize)
+        return self._get_manager(metric_name).get_best_epoch_value(minimize=minimize)
+
+    def _get_manager(self, metric_name: str) -> MetricManager:
+        return self._managers[metric_name]
 
 
 class Meter:
@@ -117,7 +134,7 @@ class Meter:
         value: float,
         batch_size: int
     ):
-        self._managers[phase].add_batch_value(
+        self._get_manager(phase).add_batch_value(
             metric_name=metric_name,
             value=value,
             batch_size=batch_size
@@ -127,40 +144,55 @@ class Meter:
         self,
         phase: str
     ):
-        self._managers[phase].begin_epoch()
+        self._get_manager(phase).begin_epoch()
 
     def end_phase(
         self,
         phase: str
     ):
-        self._managers[phase].end_epoch()
+        self._get_manager(phase).end_epoch()
 
     def get_last_batch_value(
         self,
         phase: str,
         metric_name: str
     ) -> float:
-        return self._managers[phase].get_last_batch_value(metric_name)
+        return self._get_manager(phase).get_last_batch_value(metric_name)
 
     def get_all_last_batch_values(
         self,
         phase: str
     ) -> Dict[str, float]:
-        return self._managers[phase].get_all_last_batch_values()
+        return self._get_manager(phase).get_all_last_batch_values()
+
+    # Epochs
+
+    def get_current_epoch_value(
+        self,
+        phase: str,
+        metric_name: str
+    ) -> float:
+        return self._get_manager(phase).get_current_epoch_value(metric_name)
+
+    def get_current_epoch_metrics_values(
+        self,
+        phase: str
+    ) -> Dict[str, float]:
+        return self._get_manager(phase).current_epoch_metrics_values
 
     def get_last_epoch_value(
         self,
         phase: str,
         metric_name: str
     ) -> float:
-        return self._managers[phase].get_last_epoch_value(metric_name)
+        return self._get_manager(phase).get_last_epoch_value(metric_name)
 
-    def get_all_epoch_values(
+    def get_all_epochs_values(
         self,
         phase: str,
         metric_name: str
     ) -> [float]:
-        return self._manages[phase].get_all_epoch_values(metric_name)
+        return self._get_manager(phase).get_all_epochs_values(metric_name)
 
     def get_best_epoch_value(
         self,
@@ -168,7 +200,7 @@ class Meter:
         metric_name: str,
         minimize: bool
     ) -> float:
-        return self._managers[phase].get_best_epoch_value(
+        return self._get_manager(phase).get_best_epoch_value(
             metric_name=metric_name,
             minimize=minimize
         )
@@ -191,6 +223,9 @@ class Meter:
         )
 
         return last == best
+
+    def _get_manager(self, phase: str) -> MetricsManager:
+        return self._managers[phase]
 
 
 class Monitor:
