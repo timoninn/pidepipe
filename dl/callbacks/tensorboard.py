@@ -16,10 +16,13 @@ class TensorboardCallback(Callback):
         log_dir: str,
         comment: str
     ):
+        self.log_dir = Path(log_dir)
+
         self.tb = SummaryWriter(
-            log_dir=log_dir,
-            comment=comment
+            log_dir=self.log_dir / comment
         )
+
+        self.is_g = True
 
     def on_begin(self, state: State):
         print(f'Torch version: {torch.__version__}')
@@ -39,35 +42,31 @@ class TensorboardCallback(Callback):
 
     def on_phase_end(self, state: State):
 
-        metrics_values = state.meter.get_current_epoch_metrics_values(
-            phase=state.phase
-        )
+        # metrics_values = state.meter.get_current_epoch_metrics_values(
+        #     phase=state.phase
+        # )
 
-        self.tb.add_scalars(
-            main_tag=state.phase,
-            tag_scalar_dict=metrics_values,
-            global_step=state.epoch
-        )
+        # self.tb.add_scalars(
+        #     main_tag=state.phase,
+        #     tag_scalar_dict=metrics_values,
+        #     global_step=state.epoch
+        # )
 
-        # for name in state.meter.get_all_metric_names(state.phase):
-        #     value = state.meter.get_last_epoch_value(
-        #         phase=state.phase,
-        #         metric_name=name
-        #     )
+        for name in state.meter.get_all_metric_names(state.phase):
+            value = state.meter.get_last_epoch_value(
+                phase=state.phase,
+                metric_name=name
+            )
 
-        #     self.tb.add_scalar(
-        #         # tag=f'{state.phase}_{name}',
-        #         tag=f'{name}/{state.phase}',
-        #         scalar_value=value,
-        #         global_step=state.epoch
-        #     )
-
-        print(f'{state.phase}_{name}: {value}')
+            self.tb.add_scalar(
+                # tag=f'{state.phase}_{name}',
+                tag=f'{name}/{state.phase}',
+                scalar_value=value,
+                global_step=state.epoch
+            )
 
     def on_batch_begin(self, state: State):
-
-        # Execute code once
-        self.tb.add_graph(state.model, state.input)
+        pass
 
     def on_batch_end(self, state: State):
         pass
