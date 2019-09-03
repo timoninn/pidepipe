@@ -136,7 +136,6 @@ class Runner():
         train_loader: DataLoader,
         valid_loader: DataLoader,
 
-        log_dir: str,
         num_epochs: int,
 
         callbacks: [Callback]
@@ -155,9 +154,7 @@ class Runner():
             criterion=criterion,
 
             epoch=0,
-            num_epochs=num_epochs,
-
-            log_dir=log_dir
+            num_epochs=num_epochs
         )
 
         self._run()

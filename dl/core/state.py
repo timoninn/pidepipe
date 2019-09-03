@@ -18,9 +18,7 @@ class State:
         criterion: nn.Module,
 
         epoch: int,
-        num_epochs: int,
-
-        log_dir: str = None
+        num_epochs: int
     ):
         self.model = model
         self.optimizer = optimizer
@@ -29,8 +27,6 @@ class State:
 
         self.epoch: int = epoch
         self.num_epochs: int = num_epochs
-
-        self.log_dir: str = log_dir
 
         self.phase: str = None
         self.stop_train: bool = False
