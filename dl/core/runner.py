@@ -127,7 +127,6 @@ class Runner():
 
     def train(
         self,
-
         model: nn.Module,
         criterion: nn.Module,
         optimizer: optim.Optimizer,
@@ -137,7 +136,6 @@ class Runner():
         valid_loader: DataLoader,
 
         num_epochs: int,
-
         callbacks: [Callback]
     ):
         self.callbacks = callbacks
@@ -152,7 +150,6 @@ class Runner():
             optimizer=optimizer,
             scheduler=scheduler,
             criterion=criterion,
-
             epoch=0,
             num_epochs=num_epochs
         )
@@ -176,7 +173,6 @@ class Runner():
             optimizer=None,
             scheduler=None,
             criterion=None,
-
             epoch=0,
             num_epochs=1
         )

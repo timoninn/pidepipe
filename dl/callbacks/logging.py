@@ -4,10 +4,17 @@ from ..core.state import State
 from tqdm import tqdm
 
 
-class LoggingCallback(Callback):
+class ConsoleLoggingCallback(Callback):
 
     def __init__(self):
         self.tqdm = None
+
+    def _update_tqdm(self, metrics_values):
+        self.tqdm.set_postfix(
+            { k: f'{v:3.8f}' for k, v in sorted(metrics_values.items()) }
+        )
+
+        self.tqdm.update()
 
     def on_begin(self, state: State):
         pass
@@ -30,6 +37,12 @@ class LoggingCallback(Callback):
         )
 
     def on_phase_end(self, state: State):
+        metrics_values = state.meter.get_current_epoch_metrics_values(
+            phase=state.phase
+        )
+
+        self._update_tqdm(metrics_values)
+
         self.tqdm.close()
         self.tqdm = None
 
@@ -45,12 +58,20 @@ class LoggingCallback(Callback):
         pass
 
     def on_batch_end(self, state: State):
-        metrics_values = state.meter.get_current_epoch_metrics_values(
+
+        metrics_values = state.meter.get_all_last_batch_values(
             phase=state.phase
         )
 
-        self.tqdm.set_postfix(
-            { k: f'{v:3.8f}' for k, v in sorted(metrics_values.items()) }
-        )
 
-        self.tqdm.update()
+        # metrics_values = state.meter.get_current_epoch_metrics_values(
+        #     phase=state.phase
+        # )
+
+        self._update_tqdm(metrics_values)
+
+        # self.tqdm.set_postfix(
+        #     { k: f'{v:3.8f}' for k, v in sorted(metrics_values.items()) }
+        # )
+
+        # self.tqdm.update()

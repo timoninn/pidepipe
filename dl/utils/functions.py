@@ -18,7 +18,7 @@ def get_activation_func(name: str == 'none'):
 
     else:
         raise NotImplementedError(
-            'Only "sigmoid" and "softmax2d" activation was implemented'
+            'Only "none", "sigmoid" and "softmax2d" activations were implemented'
         )
 
 
@@ -33,8 +33,8 @@ def dice(
     """Calculate dise loss.
 
     Arguments:
-        logits {torch.Tensor} -- Predicted logits. Shape (N, ...)
-        target {torch.Tensor} -- Target. Shape (N, ...)
+        logits {torch.Tensor} -- Predicted logits. Shape (N, C, H, W)
+        target {torch.Tensor} -- Target. Shape (N, C, H, W)
 
         N - batch size
 
@@ -43,10 +43,13 @@ def dice(
         eps {float} -- Epsilon for numeric stability (default: {1e-7})
         activation {str} -- Torch activation function applied for logits.
             One of 'none', 'sogmoid', 'softmax2d' (default: {'sigmoid'})
+        reduction {str} -- Result value reduction.
 
     Returns:
         float -- Dice score
     """
+    assert logits.dim() == target.dim() == 4, 'Dice requires 4D tensors as input'
+
     batch_size = logits.size(0)
 
     activation_func = get_activation_func(activation)
@@ -55,20 +58,21 @@ def dice(
     if threshold is not None:
         predicted = (predicted > threshold).float()
 
-
-    sum_dice = 0.0
+    batch_dice = 0.0
     for p, t in zip(predicted, target):
-        intersection = torch.sum(p * t)
-        union = torch.sum(p) + torch.sum(t)
-        dice = 2.0 * intersection / (union + eps)
+        dice = flat_dice(
+            predicted=p,
+            target=t,
+            eps=eps
+        )
 
-        sum_dice += dice
+        batch_dice += dice
 
     if reduction == 'none':
-        result = sum_dice
+        result = batch_dice
 
     elif reduction == 'mean':
-        result = sum_dice / batch_size
+        result = batch_dice / batch_size
 
     else:
         raise NotImplementedError(
@@ -76,3 +80,17 @@ def dice(
         )
 
     return result
+
+
+def flat_dice(
+    predicted: torch.Tensor,
+    target: torch.Tensor,
+    eps: float = 1e-7,
+) -> float:
+    assert predicted.dim() == target.dim() == 3, 'Flat dice requires 3D tensors as input'
+
+    intersection = torch.sum(predicted * target)
+    union = torch.sum(predicted) + torch.sum(target)
+    dice = 2.0 * intersection / (union + eps)
+
+    return dice

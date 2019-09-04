@@ -8,7 +8,7 @@ from ..core.state import State
 from ..core.meter import Monitor
 
 
-class CheckpointCallback(Callback):
+class SaveCheckpointCallback(Callback):
 
     def __init__(
         self,

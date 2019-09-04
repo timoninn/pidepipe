@@ -9,7 +9,7 @@ from ..core.state import State
 # $tensorboard --logdir=runs
 
 
-class TensorboardCallback(Callback):
+class TensorboardLoggingCallback(Callback):
 
     def __init__(
         self,
