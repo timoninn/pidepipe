@@ -78,8 +78,6 @@ class Runner():
         input, target = batch
 
         input = self._to_device(input)
-
-        # Targer is None for infer phase.
         target = self._to_device(target)
 
         # Check where to zero gradients before or after model call.
@@ -126,6 +124,32 @@ class Runner():
             for callback in self.callbacks:
                 getattr(callback, f'on_{name}')(self.state)
 
+    def run(
+        self,
+        model: nn.Module,
+        criterion: nn.Module,
+        optimizer: optim.Optimizer,
+        scheduler: Scheduler,
+
+        loaders: Dict[str, DataLoader],
+
+        num_epochs: int,
+        callbacks: [Callback]
+    ):
+        self.loaders = loaders
+        self.callbacks = callbacks
+
+        self.state = State(
+            model=model,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            criterion=criterion,
+            epoch=0,
+            num_epochs=num_epochs
+        )
+
+        self._run()
+
     def train(
         self,
         model: nn.Module,
@@ -139,23 +163,20 @@ class Runner():
         num_epochs: int,
         callbacks: [Callback]
     ):
-        self.callbacks = callbacks
-
-        self.loaders: Dict[str, DataLoader] = {
+        loaders = {
             'train': train_loader,
             'valid': valid_loader
         }
 
-        self.state = State(
+        self.run(
             model=model,
+            criterion=criterion,
             optimizer=optimizer,
             scheduler=scheduler,
-            criterion=criterion,
-            epoch=0,
-            num_epochs=num_epochs
+            loaders=loaders,
+            num_epochs=1,
+            callbacks=callbacks
         )
-
-        self._run()
 
     def eval(
         self,
@@ -163,19 +184,28 @@ class Runner():
         loader: DataLoader,
         callbacks: [Callback]
     ):
-        self.callbacks = callbacks
-
-        self.loaders: Dict[str, DataLoader] = {
-            'valid': loader
-        }
-
-        self.state = State(
+        self.run(
             model=model,
+            criterion=None,
             optimizer=None,
             scheduler=None,
-            criterion=None,
-            epoch=0,
-            num_epochs=1
+            loaders={'valid': loader},
+            num_epochs=1,
+            callbacks=callbacks
         )
 
-        self._run()
+    def infer(
+        self,
+        model: nn.Module,
+        loader: DataLoader,
+        callbacks: [Callback]
+    ):
+        self.run(
+            model=model,
+            criterion=None,
+            optimizer=None,
+            scheduler=None,
+            loaders={'infer': loader},
+            num_epochs=1,
+            callbacks=callbacks
+        )
