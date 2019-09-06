@@ -22,9 +22,9 @@ class SchedulerCallback(Callback):
                 metric_name=self.monitor.metric_name
             )
 
-            state.scheduler.step(metric_value)
+            state.scheduler.step(metric_value, epoch=state.epoch)
         else:
-            state.scheduler.step()
+            state.scheduler.step(epoch=state.epoch)
 
     def on_epoch_begin(self, state: State):
         pass

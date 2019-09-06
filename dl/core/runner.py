@@ -31,7 +31,7 @@ class Runner():
 
         self._run_event('begin')
 
-        for epoch in range(self.state.num_epochs):
+        for epoch in range(1, self.state.num_epochs + 1):
             self._run_epoch(epoch)
 
             if self.state.stop_train:
@@ -41,18 +41,19 @@ class Runner():
 
     def _run_epoch(self, epoch):
 
+        self.state.epoch = epoch
+
         self._run_event('epoch_begin')
 
         for phase in self._get_phases():
-            self._run_phase(phase=phase, epoch=epoch)
+            self._run_phase(phase=phase)
 
         self._run_event('epoch_end')
 
-    def _run_phase(self, phase: str, epoch: int):
+    def _run_phase(self, phase: str):
         loader = self._get_loader(phase=phase)
 
         self.state.phase = phase
-        self.state.epoch = epoch
         self.state.num_batches = len(loader)
 
         self.state.meter.begin_phase(phase=phase)

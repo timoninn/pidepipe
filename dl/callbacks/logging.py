@@ -30,7 +30,7 @@ class ConsoleLoggingCallback(Callback):
 
     def on_phase_begin(self, state: State):
         self.tqdm = tqdm(
-            desc=f'Epoch {state.epoch + 1} / {state.num_epochs} Phase {state.phase}',
+            desc=f'Epoch {state.epoch} / {state.num_epochs} Phase {state.phase}',
             total=state.num_batches,
             leave=True,
             ncols=0
