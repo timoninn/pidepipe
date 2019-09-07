@@ -33,4 +33,4 @@ class InferCallback(Callback):
 
     def on_batch_end(self, state: State):
         for arr in state.output.cpu().numpy():
-            self.predictions.extend(arr)
+            self.predictions.append(arr)
