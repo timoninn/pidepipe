@@ -18,7 +18,9 @@ class State:
         criterion: nn.Module,
 
         epoch: int,
-        num_epochs: int
+        num_epochs: int,
+
+        device: torch.device = None
     ):
         self.model = model
         self.optimizer = optimizer
@@ -29,7 +31,7 @@ class State:
         self.num_epochs: int = num_epochs
 
         self.phase: str = None
-        self.stop_train: bool = False
+        self.stop_running: bool = False
 
         self.batch_idx: int = None
         self.num_batches: int = None
@@ -38,6 +40,8 @@ class State:
         self.target = None
 
         self.output = None
+
+        self.device = device
 
         self.meter = Meter()
 

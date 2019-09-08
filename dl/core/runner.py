@@ -17,38 +17,29 @@ Scheduler = _LRScheduler
 
 class Runner():
 
-    def __init__(
-        self,
-        device: torch.device = None
-    ):
-        self.device = device if device is not None else get_available_device()
+    def __init__(self):
         self.state: State = None
 
     def _run(self):
-        # Fix optimizer loading 3
-        # Model to device before optimizer loading state dict
-        self.state.model.to(self.device)
-
-        self._run_event('begin')
+        self._send_event('begin')
 
         for epoch in range(1, self.state.num_epochs + 1):
-            self._run_epoch(epoch)
-
-            if self.state.stop_train:
+            if self.state.stop_running:
                 break
 
-        self._run_event('end')
+            self._run_epoch(epoch)
+
+        self._send_event('end')
 
     def _run_epoch(self, epoch):
-
         self.state.epoch = epoch
 
-        self._run_event('epoch_begin')
+        self._send_event('epoch_begin')
 
         for phase in self._get_phases():
             self._run_phase(phase=phase)
 
-        self._run_event('epoch_end')
+        self._send_event('epoch_end')
 
     def _run_phase(self, phase: str):
         loader = self._get_loader(phase=phase)
@@ -58,60 +49,25 @@ class Runner():
 
         self.state.meter.begin_phase(phase=phase)
 
-        self.state.model.train(self.state.is_train_phase)
+        self._send_event('phase_begin')
 
-        self._run_event('phase_begin')
-
-        with torch.set_grad_enabled(self.state.is_train_phase):
-            for idx, batch in enumerate(loader):
-                self.state.batch_idx = idx
-
-                self._run_batch(batch)
+        for idx, batch in enumerate(loader):
+            self.state.batch_idx = idx
+            self._run_batch(batch)
 
         self.state.meter.end_phase(phase=phase)
 
-        self._run_event('phase_end')
+        self._send_event('phase_end')
 
     def _run_batch(self, batch):
-        self._run_event('batch_begin')
 
         input, target = batch
 
-        input = self._to_device(input)
-        target = self._to_device(target)
-
-        # Check where to zero gradients before or after model call.
-        if self.state.is_train_phase:
-            self.state.optimizer.zero_grad()
-
-        output = self.state.model(input)
-
         self.state.input = input
         self.state.target = target
-        self.state.output = output
 
-        # Criterion may be None for infer and valid phases.
-        if self.state.is_infer_phase == False and self.state.criterion is not None:
-            loss = self.state.criterion(output, target)
-
-            self.state.meter.add_batch_value(
-                phase=self.state.phase,
-                metric_name='loss',
-                value=loss.item(),
-                batch_size=self.state.input.size(0)
-            )
-
-            if self.state.is_train_phase:
-                loss.backward()
-                self.state.optimizer.step()
-
-        self._run_event('batch_end')
-
-    def _to_device(self, value: Any) -> Any:
-        if torch.is_tensor(value):
-            return value.to(self.device)
-        else:
-            return value
+        self._send_event('batch_begin')
+        self._send_event('batch_end')
 
     def _get_loader(self, phase: str) -> DataLoader:
         return self.loaders[phase]
@@ -119,10 +75,31 @@ class Runner():
     def _get_phases(self) -> [str]:
         return self.loaders.keys()
 
-    def _run_event(self, name: str):
+    def _send_event(self, name: str):
         if self.callbacks is not None:
             for callback in self.callbacks:
                 getattr(callback, f'on_{name}')(self.state)
+
+    def run2(
+        self,
+        loaders: Dict[str, DataLoader],
+
+        num_epochs: int,
+        callbacks: [Callback]
+    ):
+        self.loaders = loaders
+        self.callbacks = callbacks
+
+        self.state = State(
+            model=None,
+            optimizer=None,
+            scheduler=None,
+            criterion=None,
+            epoch=0,
+            num_epochs=num_epochs
+        )
+
+        self._run()
 
     def run(
         self,

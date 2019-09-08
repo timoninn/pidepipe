@@ -43,7 +43,7 @@ class EarlyStoppingCallback(Callback):
 
         if self.num_fails == self.patience:
             print('Early stopping')
-            state.stop_train = True
+            state.stop_running = True
 
     def on_epoch_end(self, state: State):
         if state.is_train_phase:
