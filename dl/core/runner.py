@@ -60,11 +60,7 @@ class Runner():
         self._send_event('phase_end')
 
     def _run_batch(self, batch):
-
-        input, target = batch
-
-        self.state.input = input
-        self.state.target = target
+        self.state.batch = batch
 
         self._send_event('batch_begin')
         self._send_event('batch_end')

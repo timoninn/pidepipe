@@ -1,4 +1,4 @@
-from typing import Dict, Any, abstractmethod
+from typing import Dict, Tuple, Any, abstractmethod
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
@@ -18,9 +18,7 @@ class State:
         criterion: nn.Module,
 
         epoch: int,
-        num_epochs: int,
-
-        device: torch.device = None
+        num_epochs: int
     ):
         self.model = model
         self.optimizer = optimizer
@@ -35,15 +33,21 @@ class State:
 
         self.batch_idx: int = None
         self.num_batches: int = None
-
-        self.input = None
-        self.target = None
+        self.batch: Any = None
 
         self.output = None
 
-        self.device = device
+        self.device: torch.device = None
 
         self.meter = Meter()
+
+    @property
+    def input(self) -> torch.Tensor:
+        return self.batch[0]
+
+    @property
+    def target(self) -> torch.Tensor:
+        return self.batch[1]
 
     @property
     def is_train_phase(self) -> bool:
@@ -52,4 +56,3 @@ class State:
     @property
     def is_infer_phase(self) -> bool:
         return (self.phase == 'infer')
-

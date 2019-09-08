@@ -37,12 +37,7 @@ class ModelCallback(Callback):
 
     def on_batch_begin(self, state: State):
         with torch.set_grad_enabled(state.is_train_phase):
+            input, target = to_device(device=state.device, value=state.batch)
 
-            input = to_device(device=state.device, value=state.input)
-            target = to_device(device=state.device, value=state.target)
-
-            output = state.model(input)
-
-            state.input = input
-            state.target = target
-            state.output = output
+            state.batch = (input, target)
+            state.output = state.model(input)
