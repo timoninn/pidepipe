@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from ..core.callback import Callback
 from ..core.state import State
-from ..utils.functions import get_available_device, to_device
+from ..utils.functions import get_available_device, to_device, get_activation_func
 
 Scheduler = _LRScheduler
 
@@ -18,9 +18,11 @@ class ModelCallback(Callback):
     def __init__(
         self,
         model: nn.Module,
+        activation: str = 'none',
         device: torch.device = None
     ):
         self.model = model
+        self.activation = get_activation_func(activation)
 
         self.device = device if device is not None else get_available_device()
 
@@ -40,8 +42,8 @@ class ModelCallback(Callback):
             input = to_device(device=state.device, value=state.input)
             target = to_device(device=state.device, value=state.target)
 
+            output = state.model(input)
+
             state.batch[0] = input
             state.batch[1] = target
-
-            # state.batch = (input, target)
-            state.output = state.model(input)
+            state.output = self.activation(input=output)
