@@ -17,8 +17,9 @@ class SaveCheckpointCallback(Callback):
         minimize: bool = True
     ):
         self.path = Path(path)
-        self.minimize = minimize
+        self.path.mkdir(parents=True, exist_ok=True)
 
+        self.minimize = minimize
         self.monitor = Monitor(monitor)
 
     def _is_last_value_best(self, state: State):

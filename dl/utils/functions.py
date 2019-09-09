@@ -43,7 +43,7 @@ def dice(
     target: torch.Tensor,
     threshold: float = None,
     eps: float = 1e-7,
-    activation: str = 'sigmoid',
+    activation: str = 'none',
     reduction: str = 'mean'
 ) -> float:
     """Calculate dise loss.

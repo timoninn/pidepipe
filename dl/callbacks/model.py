@@ -18,7 +18,7 @@ class ModelCallback(Callback):
     def __init__(
         self,
         model: nn.Module,
-        activation: str = 'none',
+        activation: str,
         device: torch.device = None
     ):
         self.model = model

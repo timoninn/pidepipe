@@ -37,7 +37,7 @@ class FilesInferCallback(Callback):
 
     def on_batch_end(self, state: State):
         output = state.output.cpu().numpy()
-        ids = state.batch[3]
+        ids = state.batch[2]
 
         for id, out in zip(ids, output):
             np.save(self.out_dir / f'{id}.npy', out)

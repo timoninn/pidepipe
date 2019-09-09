@@ -11,7 +11,7 @@ class DiceLoss(nn.Module):
     def __init__(
         self,
         eps: float = 1e-7,
-        activation: str = 'sigmoid',
+        activation: str = 'none',
         reduction: str = 'mean'
     ):
         super().__init__()
@@ -37,7 +37,7 @@ class BCEDiceLoss(nn.Module):
 
     def __init__(
         self,
-        activation: str = 'sigmoid'
+        activation: str = 'none'
     ):
         super().__init__()
 
@@ -51,7 +51,7 @@ class BCEDiceLoss(nn.Module):
         target: torch.Tensor
     ) -> float:
 
-        predicted = self.activation(input=logits)
+        predicted = self.activation(logits)
 
         return self.bce(predicted, target) - torch.log(self.dice(logits, target))
 

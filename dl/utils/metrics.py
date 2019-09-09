@@ -10,7 +10,7 @@ class DiceMetric(nn.Module):
         self,
         threshold: float = 0.5,
         eps: float = 1e-7,
-        activation: str = 'sigmoid'
+        activation: str = 'none'
     ):
         super().__init__()
 
