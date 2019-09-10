@@ -2,6 +2,10 @@ import logging
 from tqdm import tqdm
 from pathlib import Path
 
+import torch
+from torch.utils.tensorboard import SummaryWriter
+import torchvision
+
 from ..core.callback import Callback
 from ..core.state import State
 
@@ -69,3 +73,34 @@ class FileLoggingCallback(Callback):
 
         msg = f'Epoch {state.epoch} / {state.num_epochs} Phase: {state.phase} Metrics: {metrics_values}'
         self.logger.info(msg)
+
+
+class TensorboardLoggingCallback(Callback):
+
+    def __init__(
+        self,
+        log_dir: str,
+        comment: str
+    ):
+        self.log_dir = Path(log_dir)
+        self.tb = SummaryWriter(log_dir=self.log_dir / comment)
+
+    def on_begin(self, state: State):
+        print(f'Torch version: {torch.__version__}')
+        print(f'Torchvision version: {torchvision.__version__}')
+
+    def on_end(self, state: State):
+        self.tb.close()
+
+    def on_phase_end(self, state: State):
+        for name in state.meter.get_all_metric_names(state.phase):
+            value = state.meter.get_last_epoch_value(
+                phase=state.phase,
+                metric_name=name
+            )
+
+            self.tb.add_scalar(
+                tag=f'{name}/{state.phase}',
+                scalar_value=value,
+                global_step=state.epoch
+            )

@@ -1,5 +1,6 @@
 # pide-pipe
 
 ### TODO:
-- [ ] Log to file
+- [+] Log to file
 - [ ] Config run
+- [ ] Experiment structure
