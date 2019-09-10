@@ -1,7 +1,9 @@
+import logging
+from tqdm import tqdm
+from pathlib import Path
+
 from ..core.callback import Callback
 from ..core.state import State
-
-from tqdm import tqdm
 
 
 class ConsoleLoggingCallback(Callback):
@@ -11,22 +13,10 @@ class ConsoleLoggingCallback(Callback):
 
     def _update_tqdm(self, metrics_values):
         self.tqdm.set_postfix(
-            { k: f'{v:3.8f}' for k, v in sorted(metrics_values.items()) }
+            {k: f'{v:3.8f}' for k, v in sorted(metrics_values.items())}
         )
 
         self.tqdm.update()
-
-    def on_begin(self, state: State):
-        pass
-
-    def on_end(self, state: State):
-        pass
-
-    def on_epoch_begin(self, state: State):
-        pass
-
-    def on_epoch_end(self, state: State):
-        pass
 
     def on_phase_begin(self, state: State):
         self.tqdm = tqdm(
@@ -35,6 +25,13 @@ class ConsoleLoggingCallback(Callback):
             leave=True,
             ncols=0
         )
+
+    def on_batch_end(self, state: State):
+        metrics_values = state.meter.get_all_last_batch_values(
+            phase=state.phase
+        )
+
+        self._update_tqdm(metrics_values)
 
     def on_phase_end(self, state: State):
         metrics_values = state.meter.get_current_epoch_metrics_values(
@@ -46,32 +43,29 @@ class ConsoleLoggingCallback(Callback):
         self.tqdm.close()
         self.tqdm = None
 
-        # for name in state.meter.get_all_metric_names(state.phase):
-        #     value = state.meter.get_last_epoch_value(
-        #         phase=state.phase,
-        #         metric_name=name
-        #     )
 
-        #     print(f'{state.phase}_{name}: {value}')
+class FileLoggingCallback(Callback):
 
-    def on_batch_begin(self, state: State):
-        pass
+    def __init__(
+        self,
+        log_dir: str
+    ):
+        self.log_dir = Path(log_dir)
+        self.log_dir.mkdir(parents=True, exist_ok=True)
 
-    def on_batch_end(self, state: State):
+        handler = logging.FileHandler(self.log_dir / 'log.txt')
+        handler.setLevel(logging.INFO)
 
-        metrics_values = state.meter.get_all_last_batch_values(
+        logger = logging.getLogger(name='state_logger')
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+
+        self.logger = logger
+
+    def on_phase_end(self, state: State):
+        metrics_values = state.meter.get_current_epoch_metrics_values(
             phase=state.phase
         )
 
-
-        # metrics_values = state.meter.get_current_epoch_metrics_values(
-        #     phase=state.phase
-        # )
-
-        self._update_tqdm(metrics_values)
-
-        # self.tqdm.set_postfix(
-        #     { k: f'{v:3.8f}' for k, v in sorted(metrics_values.items()) }
-        # )
-
-        # self.tqdm.update()
+        msg = f'Epoch {state.epoch} / {state.num_epochs} Phase: {state.phase} Metrics: {metrics_values}'
+        self.logger.info(msg)
