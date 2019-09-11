@@ -6,13 +6,17 @@ from ..core.callback import Callback
 from ..core.state import State
 from ..core.meter import Monitor
 
+Scheduler = lr_scheduler._LRScheduler
+
 
 class SchedulerCallback(Callback):
 
     def __init__(
         self,
+        scheduler: Scheduler,
         monitor: str = 'train_loss'
     ):
+        self.scheduler = scheduler
         self.monitor = Monitor(monitor)
 
     def _step(self, state: State):
@@ -26,20 +30,18 @@ class SchedulerCallback(Callback):
         else:
             state.scheduler.step(epoch=state.epoch)
 
+    def _get_lr(self, scheduler: Scheduler):
+        if isinstance(scheduler, lr_scheduler.ReduceLROnPlateau):
+            return None
+        else:
+            return scheduler.get_lr()
+
+    def on_begin(self, state: State):
+        state.scheduler = self.scheduler
+
     def on_epoch_begin(self, state: State):
-        pass
+        state.lr = self._get_lr(state.scheduler)
 
     def on_epoch_end(self, state: State):
+        # Where to make scheduler step on epoch begin or end ?
         self._step(state)
-
-    def on_phase_begin(self, state: State):
-        pass
-
-    def on_phase_end(self, state: State):
-        pass
-
-    def on_batch_begin(self, state: State):
-        pass
-
-    def on_batch_end(self, state: State):
-        pass
