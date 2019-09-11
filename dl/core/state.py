@@ -39,6 +39,8 @@ class State:
 
         self.device: torch.device = None
 
+        self.lr: Any = None
+
         self.meter = Meter()
 
     @property

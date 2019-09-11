@@ -67,5 +67,8 @@ class FileLoggingCallback(Callback):
             phase=state.phase
         )
 
-        msg = f'Epoch {state.epoch} / {state.num_epochs} Phase: {state.phase} Metrics: {metrics_values}'
+        msg = f'Epoch {state.epoch} / {state.num_epochs} \
+            Phase: {state.phase} \
+            Metrics: {metrics_values} \
+            lr: {state.lr}'
         self.logger.info(msg)
