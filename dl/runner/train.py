@@ -8,12 +8,13 @@ from torch.utils.data import DataLoader
 
 from ..core.runner import Runner
 from ..core.callback import Callback
-from pidepipe.dl.callbacks.logging import ConsoleLoggingCallback, FileLoggingCallback, TensorboardLoggingCallback
-from pidepipe.dl.callbacks.metrics import MetricsCallback
-from pidepipe.dl.callbacks.model import ModelCallback
-from pidepipe.dl.callbacks.scheduler import SchedulerCallback
-from pidepipe.dl.callbacks.checkpoint import SaveCheckpointCallback, LoadCheckpointCallback
 from pidepipe.dl.callbacks.train import TrainCallback
+from pidepipe.dl.callbacks.checkpoint import SaveCheckpointCallback, LoadCheckpointCallback
+from pidepipe.dl.callbacks.scheduler import SchedulerCallback
+from pidepipe.dl.callbacks.model import ModelCallback
+from pidepipe.dl.callbacks.metrics import MetricsCallback
+from pidepipe.dl.callbacks.logging import ConsoleLoggingCallback, FileLoggingCallback, TensorboardLoggingCallback
+from pidepipe.dl.callbacks.infer import InferCallback, FilesInferCallback
 
 
 class TrainRunner(Runner):
@@ -22,6 +23,15 @@ class TrainRunner(Runner):
         self
     ):
         pass
+
+    def _get_checkpoints_path(self, log_dir: str) -> Path:
+        return Path(log_dir) / 'checkpoints'
+
+    def _get_logs_path(self, log_dir: str) -> Path:
+        return Path(log_dir) / 'logs'
+
+    def _get_infer_path(self, log_dir: str) -> Path:
+        return Path(log_dir) / 'infer'
 
     def train(
         self,
@@ -33,19 +43,22 @@ class TrainRunner(Runner):
         optimizer: optim.Optimizer,
         scheduler: lr_scheduler._LRScheduler,
 
-        train_loader: Dict[str, DataLoader],
-        valid_loader: Dict[str, DataLoader] = None,
+        train_loader: DataLoader,
+        valid_loader: DataLoader,
 
         num_epochs: int = 1,
         metrics: Dict[str, nn.Module] = None,
+        monitor: str = 'train_loss',
 
         log_dir: str = None,
         resume_dir: str = None,
 
-        monitor: str = 'train_loss',
-
         callbacks: List[Callback] = None,
     ):
+        loaders = {
+            'train': train_loader,
+            'valid': valid_loader
+        }
 
         callbacks = [
             ModelCallback(model=model, activation=activation),
@@ -58,11 +71,9 @@ class TrainRunner(Runner):
             )
 
         if resume_dir is not None:
-            resume_path = Path(resume_dir) / 'checkpoints' / 'best.pt'
+            resume_path = self._get_checkpoints_path(resume_dir) / 'best.pt'
 
-            callbacks.append(
-                LoadCheckpointCallback(path=resume_path)
-            )
+            callbacks.append(LoadCheckpointCallback(path=resume_path))
 
         if metrics is not None:
             callbacks.append(MetricsCallback(metrics=metrics))
@@ -70,22 +81,17 @@ class TrainRunner(Runner):
         callbacks.append(ConsoleLoggingCallback())
 
         if log_dir is not None:
-            log_path = Path(log_dir)
-
             callbacks.extend(
-                FileLoggingCallback(log_dir=log_path / 'logs'),
+                [
+                    FileLoggingCallback(log_dir=self._get_logs_path(log_dir)),
 
-                SaveCheckpointCallback(
-                    path=log_path / 'checkpoints',
-                    monitor=monitor,
-                    minimize=True
-                )
+                    SaveCheckpointCallback(
+                        path=self._get_checkpoints_path(log_dir),
+                        monitor=monitor,
+                        minimize=True
+                    )
+                ]
             )
-
-        loaders = {
-            'train': train_loader,
-            'valid': valid_loader
-        }
 
         self.run2(
             loaders=loaders,
@@ -99,11 +105,29 @@ class TrainRunner(Runner):
         model: nn.Module,
         activation: str,
 
-        loader: Dict[str, DataLoader],
+        loader: DataLoader,
         metrics: Dict[str, nn.Module],
         resume_dir: str
     ):
-        pass
+        loaders = {'valid': loader}
+
+        callbacks = [
+            ModelCallback(model=model, activation=activation),
+
+            LoadCheckpointCallback(
+                path=self._get_checkpoints_path(resume_dir) / 'best.pt'
+            ),
+
+            MetricsCallback(metrics=metrics),
+
+            ConsoleLoggingCallback()
+        ]
+
+        self.run2(
+            loaders=loaders,
+            num_epochs=1,
+            callbacks=callbacks
+        )
 
     def infer(
         self,
@@ -111,8 +135,37 @@ class TrainRunner(Runner):
         model: nn.Module,
         activation: str,
 
-        loader: Dict[str, DataLoader],
+        loader: DataLoader,
         out_dir: str,
         resume_dir: str,
+
+        one_file_output: bool = False
     ):
-        pass
+        loaders = {'infer': loader}
+
+        if one_file_output:
+            infer_callback = InferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+        else:
+            infer_callback = FilesInferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+
+        callbacks = [
+            ModelCallback(model=model, activation=activation),
+
+            LoadCheckpointCallback(
+                path=self._get_checkpoints_path(resume_dir) / 'best.pt'
+            ),
+
+            infer_callback,
+
+            ConsoleLoggingCallback()
+        ]
+
+        self.run2(
+            loaders=loaders,
+            num_epochs=1,
+            callbacks=callbacks
+        )
