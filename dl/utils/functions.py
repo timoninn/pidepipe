@@ -110,3 +110,18 @@ def flat_dice(
     dice = 2.0 * intersection / (union + eps)
 
     return dice
+
+
+    # dd = 0
+
+    # for p, t in zip(predicted, target):
+    #     intersection = torch.sum(p * t)
+    #     union = torch.sum(p) + torch.sum(t)
+    #     dice = 2.0 * intersection / (union + eps)
+
+    #     if union == 0:
+    #         dd += 1
+    #     else:
+    #         dd += dice
+
+    # return dd / 4
