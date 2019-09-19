@@ -15,14 +15,10 @@ from pidepipe.dl.callbacks.model import ModelCallback
 from pidepipe.dl.callbacks.metrics import MetricsCallback
 from pidepipe.dl.callbacks.logging import ConsoleLoggingCallback, FileLoggingCallback, TensorboardLoggingCallback
 from pidepipe.dl.callbacks.infer import InferCallback, FilesInferCallback
+from pidepipe.dl.callbacks.early_stopping import EarlyStoppingCallback
 
 
 class TrainRunner(Runner):
-
-    def __init__(
-        self
-    ):
-        pass
 
     def _get_checkpoints_path(self, log_dir: str) -> Path:
         return Path(log_dir) / 'checkpoints'
@@ -47,6 +43,8 @@ class TrainRunner(Runner):
         valid_loader: DataLoader,
 
         num_epochs: int = 1,
+        early_stopping: int = None,
+
         metrics: Dict[str, nn.Module] = None,
         monitor: str = 'train_loss',
 
@@ -78,6 +76,15 @@ class TrainRunner(Runner):
         if metrics is not None:
             callbacks.append(MetricsCallback(metrics=metrics))
 
+        if early_stopping is not None:
+            callbacks.append(
+                EarlyStoppingCallback(
+                    monitor=monitor,
+                    minimize=True,
+                    patience=early_stopping
+                )
+            )
+
         callbacks.append(ConsoleLoggingCallback())
 
         if log_dir is not None:
@@ -93,7 +100,7 @@ class TrainRunner(Runner):
                 ]
             )
 
-        self.run2(
+        self.run(
             loaders=loaders,
             num_epochs=num_epochs,
             callbacks=callbacks
@@ -123,7 +130,7 @@ class TrainRunner(Runner):
             ConsoleLoggingCallback()
         ]
 
-        self.run2(
+        self.run(
             loaders=loaders,
             num_epochs=1,
             callbacks=callbacks
@@ -164,7 +171,7 @@ class TrainRunner(Runner):
             ConsoleLoggingCallback()
         ]
 
-        self.run2(
+        self.run(
             loaders=loaders,
             num_epochs=1,
             callbacks=callbacks

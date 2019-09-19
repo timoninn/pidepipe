@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from ..core.callback import Callback
 from ..core.state import State
-from ..utils.functions import get_available_device
+from ..utils.torch import get_available_device
 
 
 class TrainCallback(Callback):

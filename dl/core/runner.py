@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from .callback import Callback
 from .state import State
-from ..utils.functions import get_available_device
+from ..utils.torch import get_available_device
 
 Scheduler = _LRScheduler
 
@@ -76,7 +76,7 @@ class Runner():
             for callback in self.callbacks:
                 getattr(callback, f'on_{name}')(self.state)
 
-    def run2(
+    def run(
         self,
         loaders: Dict[str, DataLoader],
 
@@ -96,89 +96,3 @@ class Runner():
         )
 
         self._run()
-
-    def run(
-        self,
-        model: nn.Module,
-        criterion: nn.Module,
-        optimizer: optim.Optimizer,
-        scheduler: Scheduler,
-
-        loaders: Dict[str, DataLoader],
-
-        num_epochs: int,
-        callbacks: [Callback]
-    ):
-        self.loaders = loaders
-        self.callbacks = callbacks
-
-        self.state = State(
-            model=model,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            criterion=criterion,
-            epoch=0,
-            num_epochs=num_epochs
-        )
-
-        self._run()
-
-    def train(
-        self,
-        model: nn.Module,
-        criterion: nn.Module,
-        optimizer: optim.Optimizer,
-        scheduler: Scheduler,
-
-        train_loader: DataLoader,
-        valid_loader: DataLoader,
-
-        num_epochs: int,
-        callbacks: [Callback]
-    ):
-        loaders = {
-            'train': train_loader,
-            'valid': valid_loader
-        }
-
-        self.run(
-            model=model,
-            criterion=criterion,
-            optimizer=optimizer,
-            scheduler=scheduler,
-            loaders=loaders,
-            num_epochs=1,
-            callbacks=callbacks
-        )
-
-    def eval(
-        self,
-        model: nn.Module,
-        loader: DataLoader,
-        callbacks: [Callback]
-    ):
-        self.run(
-            model=model,
-            criterion=None,
-            optimizer=None,
-            scheduler=None,
-            loaders={'valid': loader},
-            num_epochs=1,
-            callbacks=callbacks
-        )
-
-    def infer(
-        self,
-        model: nn.Module,
-        loader: DataLoader,
-        callbacks: [Callback]
-    ):
-        self.run(
-            model=model,
-            criterion=None,
-            optimizer=None,
-            scheduler=None,
-            loaders={'infer': loader},
-            num_epochs=1,
-            callbacks=callbacks
-        )

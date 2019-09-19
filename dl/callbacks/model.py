@@ -8,7 +8,8 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from ..core.callback import Callback
 from ..core.state import State
-from ..utils.functions import get_available_device, to_device, get_activation_func
+from ..utils.torch import get_available_device, to_device
+from ..utils.functions import get_activation_func
 
 Scheduler = _LRScheduler
 

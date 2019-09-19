@@ -46,5 +46,4 @@ class EarlyStoppingCallback(Callback):
             state.stop_running = True
 
     def on_epoch_end(self, state: State):
-        if state.is_train_phase:
-            self._check_early_stopping(state)
+        self._check_early_stopping(state)

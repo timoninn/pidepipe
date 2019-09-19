@@ -2,5 +2,7 @@
 
 ### TODO:
 - [+] Log to file
+- [ ] LR to file
+- [ ] 
 - [ ] Config run
-- [ ] Experiment structure
+- [ ] Experiment structure / metrics plot across experiments
