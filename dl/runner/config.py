@@ -1,3 +1,6 @@
+from typing import Dict
+
+from torch import nn
 from torch.utils.data import DataLoader
 
 from .train import TrainRunner
@@ -13,9 +16,14 @@ class ConfigRunner(TrainRunner):
 
     def train(
         self,
+
         train_loader: DataLoader,
         valid_loader: DataLoader,
-        metrics
+
+        metrics: Dict[str, nn.Module],
+
+        log_dir: str = None,
+        resume_dir: str = None,
     ):
         model = self.configer.model
 
@@ -40,25 +48,36 @@ class ConfigRunner(TrainRunner):
             metrics=metrics,
             monitor=self.configer.config['train']['monitor'],
 
-            log_dir=self.configer.log_dir,
-            resume_dir=self.configer.resume_dir
+            log_dir=log_dir,
+            resume_dir=resume_dir
         )
 
-    def eval(self, loader: DataLoader, metrics):
+    def eval(
+        self,
+        loader: DataLoader,
+        metrics: Dict[str, nn.Module],
+        resume_dir: str = None
+    ):
         super().eval(
             model=self.configer.model,
             activation=self.configer.activation,
             loader=loader,
             metrics=metrics,
-            resume_dir=self.configer.resume_dir
+            resume_dir=resume_dir
         )
 
-    def infer(self, loader: DataLoader):
+    def infer(
+        self,
+        loader: DataLoader,
+        out_dir: str,
+        resume_dir: str,
+        one_file_output: bool = False
+    ):
         super().infer(
             model=self.configer.model,
             activation=self.configer.activation,
             loader=loader,
-            out_dir=self.configer.config['infer']['out_dir'],
-            resume_dir=self.configer.resume_dir,
-            one_file_output=self.configer.config['infer']['one_file_output']
+            out_dir=out_dir,
+            resume_dir=resume_dir,
+            one_file_output=one_file_output
         )

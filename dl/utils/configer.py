@@ -20,14 +20,6 @@ class Configer:
         return self.config['experiment']['seed']
 
     @property
-    def log_dir(self):
-        return self.config['experiment'].get('log_dir')
-
-    @property
-    def resume_dir(self):
-        return self.config['experiment'].get('resume_dir')
-
-    @property
     def activation(self):
         return self.config['model']['activation']
 
