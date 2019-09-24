@@ -2,7 +2,9 @@ from pathlib import Path
 import importlib
 
 import torch
-import yaml
+
+from .reader import load_yaml
+from .model import Model
 
 
 class Configer:
@@ -24,7 +26,7 @@ class Configer:
         return self.config['model']['activation']
 
     @property
-    def model(self):
+    def model(self) -> Model:
         sub_config = self.config['model']
 
         return get_custom_object(sub_config)
@@ -46,13 +48,6 @@ class Configer:
 
         p = {'optimizer': optimizer}
         return get_object(torch.optim.lr_scheduler, sub_config, **p)
-
-
-def load_yaml(filepath: str):
-    with open(filepath, 'r') as f:
-        config = yaml.load(f, Loader=yaml.SafeLoader)
-
-    return config
 
 
 def get_custom_object(sub_config, **kwargs):
