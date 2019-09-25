@@ -27,11 +27,7 @@ class ConfigRunner(TrainRunner):
     ):
         model = self.configer.model
 
-        # Add only parameters which require grad. Use for layer freezing.
-        # trainable_parameters = filter(lambda p: p.requires_grad, model.parameters())
-
-        trainable_parameters = model.trainable_parameters()
-        optimizer = self.configer.get_optimizer(trainable_parameters)
+        optimizer = self.configer.get_optimizer(model.trainable_parameters)
 
         super().train(
             model=model,
