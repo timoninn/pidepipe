@@ -1,8 +1,30 @@
 import torch
 import torch.nn as nn
+from sklearn.metrics import accuracy_score
 
 from .functions import dice
 
+class AccuracyMetric(nn.Module):
+    def __init__(
+        self,
+        threshold: float = 0.5
+    ):
+        super().__init__()
+        self.threshold = threshold
+
+    def forward(
+        self,
+        output: torch.Tensor,
+        target: torch.Tensor
+    ) -> float:
+        batch_size = output.size(0)
+
+        predicted = (output > self.threshold).int()
+        correct = (predicted == target.int()).sum().float()
+
+        accuracy = correct / batch_size
+
+        return accuracy
 
 class DiceMetric(nn.Module):
 

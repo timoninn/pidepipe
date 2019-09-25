@@ -27,7 +27,7 @@ class ConfigRunner(TrainRunner):
     ):
         model = self.configer.model
 
-        optimizer = self.configer.get_optimizer(model.trainable_parameters)
+        optimizer = self.configer.get_optimizer(model.trainable_parameters())
 
         super().train(
             model=model,

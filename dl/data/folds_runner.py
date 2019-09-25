@@ -39,3 +39,4 @@ class KFoldsRunner():
     def run(self):
         for idx, loaders in enumerate(self.kfolds):
             self._train_fold(idx, loaders)
+            break

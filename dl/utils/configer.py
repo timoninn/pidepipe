@@ -35,7 +35,10 @@ class Configer:
     def criterion(self):
         sub_config = self.config['criterion']
 
-        return get_custom_object(sub_config)
+        if sub_config.get('py') is not None:
+            return get_custom_object(sub_config)
+        else:
+            return get_object(torch.nn, sub_config)
 
     def get_optimizer(self, parameters):
         sub_config = self.config['optimizer']
