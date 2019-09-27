@@ -45,11 +45,11 @@ class State:
 
     @property
     def input(self) -> torch.Tensor:
-        return self.batch[0]
+        return self.batch['input']
 
     @property
     def target(self) -> torch.Tensor:
-        return self.batch[1]
+        return self.batch['target']
 
     @property
     def is_train_phase(self) -> bool:
