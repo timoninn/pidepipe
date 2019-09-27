@@ -18,13 +18,14 @@ class AccuracyMetric(nn.Module):
         target: torch.Tensor
     ) -> float:
         batch_size = output.size(0)
+        length = output.size(1)
 
         predicted = (output > self.threshold).int()
         correct = (predicted == target.int()).sum().float()
 
-        accuracy = correct / batch_size
+        accuracy = correct / length
 
-        return accuracy
+        return accuracy / batch_size
 
 class DiceMetric(nn.Module):
 
