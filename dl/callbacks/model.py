@@ -47,4 +47,4 @@ class ModelCallback(Callback):
 
             state.batch['input'] = input
             state.batch['target'] = target
-            state.output = self.activation(input=output)
+            state.output = self.activation(output)
