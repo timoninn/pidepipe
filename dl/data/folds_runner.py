@@ -21,19 +21,20 @@ class KFoldsRunner():
         self.kfolds = kfolds
         self.metrics = metrics
         self.log_path = Path(log_dir)
-        self.resume_dir = resume_dir
+        self.resume_dir = Path(resume_dir)
 
         self.runner = ConfigRunner(config_path=exp_config)
 
     def _train_fold(self, idx: int, loaders: [DataLoader]):
         fold_log_dir = self.log_path / f'fold_{idx}'
+        fold_resume_dir = self.resume_dir / f'fold_{idx}'
 
         self.runner.train(
             train_loader=loaders[0],
             valid_loader=loaders[1],
             metrics=self.metrics,
             log_dir=fold_log_dir,
-            resume_dir=self.resume_dir
+            resume_dir=fold_resume_dir
         )
 
     def run(self):
