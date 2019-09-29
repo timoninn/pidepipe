@@ -14,7 +14,7 @@ from pidepipe.dl.callbacks.scheduler import SchedulerCallback
 from pidepipe.dl.callbacks.model import ModelCallback
 from pidepipe.dl.callbacks.metrics import MetricsCallback
 from pidepipe.dl.callbacks.logging import ConsoleLoggingCallback, FileLoggingCallback, TensorboardLoggingCallback
-from pidepipe.dl.callbacks.infer import InferCallback, FilesInferCallback
+from pidepipe.dl.callbacks.infer import InferCallback, FilesInferCallback, CSVInferCallback
 from pidepipe.dl.callbacks.early_stopping import EarlyStoppingCallback
 
 
@@ -146,30 +146,42 @@ class TrainRunner(Runner):
         out_dir: str,
         resume_dir: str,
 
-        one_file_output: bool = False
+        mode: str = 'one',
+        infer: Callback = None
     ):
         loaders = {'infer': loader}
 
-        if one_file_output:
+        if infer is not None:
+            infer_callback = infer
+
+        elif mode == 'one':
             infer_callback = InferCallback(
                 out_dir=self._get_infer_path(out_dir)
             )
-        else:
+
+        elif mode == 'many':
             infer_callback = FilesInferCallback(
                 out_dir=self._get_infer_path(out_dir)
             )
 
+        elif mode == 'csv':
+            infer_callback = CSVInferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+
         callbacks = [
-            ModelCallback(model=model, activation=activation),
-
-            LoadCheckpointCallback(
-                path=self._get_checkpoints_path(resume_dir) / 'best.pt'
-            ),
-
-            infer_callback,
-
-            ConsoleLoggingCallback()
+            ModelCallback(model=model, activation=activation)
         ]
+
+        if resume_dir is not None:
+            callbacks.append(
+                LoadCheckpointCallback(
+                    path=self._get_checkpoints_path(resume_dir) / 'best.pt'
+                )
+            )
+
+        callbacks.append(infer_callback)
+        callbacks.append(ConsoleLoggingCallback())
 
         self.run(
             loaders=loaders,
