@@ -50,10 +50,9 @@ class BCEDiceLoss(nn.Module):
         logits: torch.Tensor,
         target: torch.Tensor
     ) -> float:
-
         predicted = self.activation(logits)
 
-        return self.bce(predicted, target) - torch.log(self.dice(logits, target))
+        return self.bce(predicted, target) - torch.log(self.dice(logits, target) + 1e-6)
 
 
 
