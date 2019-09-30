@@ -141,7 +141,6 @@ class TrainRunner(Runner):
         model: nn.Module,
         activation: str,
         loader: DataLoader,
-        out_dir: str,
         resume_dir: str,
         callback: Callback
     ):
@@ -196,7 +195,6 @@ class TrainRunner(Runner):
             model=model,
             activation=activation,
             loader=loader,
-            out_dir=out_dir,
             resume_dir=resume_dir,
             callback=callback
         )
