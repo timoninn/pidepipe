@@ -136,38 +136,17 @@ class TrainRunner(Runner):
             callbacks=callbacks
         )
 
-    def infer(
+    def infer_callback(
         self,
-
         model: nn.Module,
         activation: str,
-
         loader: DataLoader,
         out_dir: str,
         resume_dir: str,
-
-        mode: str = 'one',
-        infer: Callback = None
+        callback: Callback
     ):
+
         loaders = {'infer': loader}
-
-        if infer is not None:
-            infer_callback = infer
-
-        elif mode == 'one':
-            infer_callback = InferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
-
-        elif mode == 'many':
-            infer_callback = FilesInferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
-
-        elif mode == 'csv':
-            infer_callback = CSVInferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
 
         callbacks = [
             ModelCallback(model=model, activation=activation)
@@ -180,11 +159,44 @@ class TrainRunner(Runner):
                 )
             )
 
-        callbacks.append(infer_callback)
+        callbacks.append(callback)
         callbacks.append(ConsoleLoggingCallback())
 
         self.run(
             loaders=loaders,
             num_epochs=1,
             callbacks=callbacks
+        )
+
+    def infer(
+        self,
+        model: nn.Module,
+        activation: str,
+        loader: DataLoader,
+        out_dir: str,
+        resume_dir: str,
+        mode: str = 'one',
+    ):
+        if mode == 'one':
+            callback = InferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+
+        elif mode == 'many':
+            callback = FilesInferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+
+        elif mode == 'csv':
+            callback = CSVInferCallback(
+                out_dir=self._get_infer_path(out_dir)
+            )
+
+        self.infer_callback(
+            model=model,
+            activation=activation,
+            loader=loader,
+            out_dir=out_dir,
+            resume_dir=resume_dir,
+            callback=callback
         )
