@@ -44,27 +44,12 @@ class SaveCheckpointCallback(Callback):
 
         torch.save(state, self.path / name)
 
-    def on_epoch_begin(self, state: State):
-        pass
-
     def on_epoch_end(self, state: State):
         if self._is_last_value_best(state):
             print('Saving state')
             self._save_state(state, 'best.pt')
 
         self._save_state(state, 'last.pt')
-
-    def on_phase_begin(self, state: State):
-        pass
-
-    def on_phase_end(self, state: State):
-        pass
-
-    def on_batch_begin(self, state: State):
-        pass
-
-    def on_batch_end(self, state: State):
-        pass
 
 
 class LoadCheckpointCallback(Callback):
@@ -76,44 +61,22 @@ class LoadCheckpointCallback(Callback):
         self.path = Path(path)
 
     def _load(self) -> Dict[str, Any]:
+        print(f'Load checkpoint at path: {self.path}')
         return torch.load(self.path)
 
     def on_begin(self, state: State):
         checkpoint = self._load()
 
-        print('Load checkpoint')
-
         state.model.load_state_dict(checkpoint['model_state_dict'])
 
         # if state.optimizer is not None:
-            # state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        # state.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            # Fix optimizer loading 1
-            # for state in state.optimizer.state.values():
-            #     for k, v in state.items():
-            #         if isinstance(v, torch.Tensor):
-            #             state[k] = v.cuda()
+        # Fix optimizer loading 1
+        # for state in state.optimizer.state.values():
+        #     for k, v in state.items():
+        #         if isinstance(v, torch.Tensor):
+        #             state[k] = v.cuda()
 
-            # Fix optimizer loading 2
-            # Model to device before optimizer creation
-
-    def on_end(self, state: State):
-        pass
-
-    def on_epoch_begin(self, state: State):
-        pass
-
-    def on_epoch_end(self, state: State):
-        pass
-
-    def on_phase_begin(self, state: State):
-        pass
-
-    def on_phase_end(self, state: State):
-        pass
-
-    def on_batch_begin(self, state: State):
-        pass
-
-    def on_batch_end(self, state: State):
-        pass
+        # Fix optimizer loading 2
+        # Model to device before optimizer creation

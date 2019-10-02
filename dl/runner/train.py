@@ -11,7 +11,7 @@ from ..core.callback import Callback
 from pidepipe.dl.callbacks.train import TrainCallback
 from pidepipe.dl.callbacks.checkpoint import SaveCheckpointCallback, LoadCheckpointCallback
 from pidepipe.dl.callbacks.scheduler import SchedulerCallback
-from pidepipe.dl.callbacks.model import ModelCallback
+from pidepipe.dl.callbacks.model import ModelCallback, TtaModelCallback
 from pidepipe.dl.callbacks.metrics import MetricsCallback
 from pidepipe.dl.callbacks.logging import ConsoleLoggingCallback, FileLoggingCallback, TensorboardLoggingCallback
 from pidepipe.dl.callbacks.infer import InferCallback, FilesInferCallback, CSVInferCallback
@@ -108,18 +108,23 @@ class TrainRunner(Runner):
 
     def eval(
         self,
-
         model: nn.Module,
         activation: str,
-
         loader: DataLoader,
         metrics: Dict[str, nn.Module],
-        resume_dir: str
+        resume_dir: str,
+        ttas: [str] = ['none'],
+        apply_reverse_tta: bool = False,
     ):
         loaders = {'valid': loader}
 
         callbacks = [
-            ModelCallback(model=model, activation=activation),
+            TtaModelCallback(
+                model=model,
+                activation=activation,
+                ttas=ttas,
+                apply_reverse_tta=apply_reverse_tta
+            ),
 
             LoadCheckpointCallback(
                 path=self._get_checkpoints_path(resume_dir) / 'best.pt'
@@ -142,13 +147,16 @@ class TrainRunner(Runner):
         activation: str,
         loader: DataLoader,
         resume_dir: str,
+        backward: bool,
         callback: Callback
     ):
 
         loaders = {'infer': loader}
 
         callbacks = [
-            ModelCallback(model=model, activation=activation)
+            # ModelCallback(model=model, activation=activation),
+            TtaModelCallback(model=model, activation=activation, ttas=[
+                             'none', 'horizontal'], apply_reverse_tta=backward)
         ]
 
         if resume_dir is not None:

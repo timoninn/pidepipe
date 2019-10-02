@@ -61,7 +61,9 @@ class ConfigRunner(TrainRunner):
             activation=self.configer.activation,
             loader=loader,
             metrics=metrics,
-            resume_dir=resume_dir
+            resume_dir=resume_dir,
+            ttas=self.configer.config['ttas'],
+            apply_reverse_tta=self.configer.config['apply_reverse_tta'],
         )
 
     def infer(

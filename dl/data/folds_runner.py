@@ -25,19 +25,48 @@ class KFoldsRunner():
 
         self.runner = ConfigRunner(config_path=exp_config)
 
+    def _get_fold_log_dir(self, idx: int):
+        return self.log_path / f'fold_{idx}'
+
+    def _get_fold_resume_dir(self, idx: int):
+        return self.resume_dir / f'fold_{idx}'
+
     def _train_fold(self, idx: int, loaders: [DataLoader]):
-        fold_log_dir = self.log_path / f'fold_{idx}'
-        fold_resume_dir = self.resume_dir / f'fold_{idx}'
+        print(f'Train fold {idx}')
 
         self.runner.train(
             train_loader=loaders[0],
             valid_loader=loaders[1],
             metrics=self.metrics,
-            log_dir=fold_log_dir,
-            resume_dir=fold_resume_dir
+            log_dir=self._get_fold_log_dir(idx),
+            resume_dir=self._get_fold_resume_dir(idx)
         )
 
-    def run(self):
+    def _eval_fold(self, idx: int, loaders: [DataLoader]):
+        print(f'Evaluate fold {idx}')
+
+        print('Valid set:')
+        self.runner.eval(
+            loader=loaders[1],
+            metrics=self.metrics,
+            resume_dir=self._get_fold_resume_dir(idx)
+        )
+
+        print('Valid set:')
+        self.runner.eval(
+            loader=loaders[1],
+            metrics=self.metrics,
+            resume_dir=self._get_fold_resume_dir(idx)
+        )
+
+        raise NotImplementedError, 'Different results for runs'
+
+    def train(self):
         for idx, loaders in enumerate(self.kfolds):
             self._train_fold(idx, loaders)
+            break
+
+    def eval(self):
+        for idx, loaders in enumerate(self.kfolds):
+            self._eval_fold(idx, loaders)
             break
