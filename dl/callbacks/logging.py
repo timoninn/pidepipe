@@ -38,7 +38,7 @@ class ConsoleLoggingCallback(Callback):
         self._update_tqdm(metrics_values)
 
     def on_phase_end(self, state: State):
-        metrics_values = state.meter.get_current_epoch_metrics_values(
+        metrics_values = state.meter.get_last_epoch_metrics_values(
             phase=state.phase
         )
 
@@ -67,7 +67,7 @@ class FileLoggingCallback(Callback):
         self.logger = logger
 
     def on_phase_end(self, state: State):
-        metrics_values = state.meter.get_current_epoch_metrics_values(
+        metrics_values = state.meter.get_last_epoch_metrics_values(
             phase=state.phase
         )
 
@@ -95,15 +95,15 @@ class TensorboardLoggingCallback(Callback):
     def on_end(self, state: State):
         self.tb.close()
 
-    def on_phase_end(self, state: State):
-        for name in state.meter.get_all_metric_names(state.phase):
-            value = state.meter.get_last_epoch_value(
-                phase=state.phase,
-                metric_name=name
-            )
+    # def on_phase_end(self, state: State):
+    #     for name in state.meter.get_all_metric_names(state.phase):
+    #         value = state.meter.get_last_epoch_value(
+    #             phase=state.phase,
+    #             metric_name=name
+    #         )
 
-            self.tb.add_scalar(
-                tag=f'{name}/{state.phase}',
-                scalar_value=value,
-                global_step=state.epoch
-            )
+    #         self.tb.add_scalar(
+    #             tag=f'{name}/{state.phase}',
+    #             scalar_value=value,
+    #             global_step=state.epoch
+    #         )

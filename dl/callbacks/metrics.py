@@ -16,21 +16,6 @@ class MetricsCallback(Callback):
     ):
         self.metrics = metrics
 
-    def on_epoch_begin(self, state: State):
-        pass
-
-    def on_epoch_end(self, state: State):
-        pass
-
-    def on_phase_begin(self, state: State):
-        pass
-
-    def on_phase_end(self, state: State):
-        pass
-
-    def on_batch_begin(self, state: State):
-        pass
-
     def on_batch_end(self, state: State):
         for name, metric in self.metrics.items():
             value = metric(state.output, state.target)
@@ -41,5 +26,3 @@ class MetricsCallback(Callback):
                 value=value.item(),
                 batch_size=state.input.size(0)
             )
-
-
