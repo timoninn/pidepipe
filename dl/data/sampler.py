@@ -23,7 +23,13 @@ def gcd(arr: [int]) -> int:
 
 class BalanceSampler(Sampler):
 
-    def __init__(self, labels: [int], balance: [float], shuffle=True):
+    def __init__(
+        self,
+        labels: [int],
+        balance: [float],
+        shuffle=True,
+        seed: int = None
+    ):
         labels = np.array(labels)
         balance = np.array(balance)
 
@@ -54,8 +60,12 @@ class BalanceSampler(Sampler):
             np.arange(labels.size)[labels == label].tolist() for label in np.unique(labels)
         ]
         self.shuffle = shuffle
+        self.seed = seed
 
     def __iter__(self):
+        if self.seed is not None:
+            np.random.seed(self.seed)
+
         indices = []
         for label_idxs, samples_count in zip(self.labels_idxs, self.samples_counts):
             replace = samples_count > len(label_idxs)
