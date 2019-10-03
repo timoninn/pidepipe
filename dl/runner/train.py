@@ -147,16 +147,20 @@ class TrainRunner(Runner):
         activation: str,
         loader: DataLoader,
         resume_dir: str,
-        backward: bool,
-        callback: Callback
+        callback: Callback,
+        ttas: [str] = ['none'],
+        apply_reverse_tta: bool = False,
     ):
 
         loaders = {'infer': loader}
 
         callbacks = [
-            # ModelCallback(model=model, activation=activation),
-            TtaModelCallback(model=model, activation=activation, ttas=[
-                             'none', 'horizontal'], apply_reverse_tta=backward)
+            TtaModelCallback(
+                model=model,
+                activation=activation,
+                ttas=ttas,
+                apply_reverse_tta=apply_reverse_tta
+            )
         ]
 
         if resume_dir is not None:
@@ -184,20 +188,16 @@ class TrainRunner(Runner):
         resume_dir: str,
         mode: str = 'one',
     ):
+        out_dir = self._get_infer_path(out_dir)
+
         if mode == 'one':
-            callback = InferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
+            callback = InferCallback(out_dir)
 
         elif mode == 'many':
-            callback = FilesInferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
+            callback = FilesInferCallback(out_dir)
 
         elif mode == 'csv':
-            callback = CSVInferCallback(
-                out_dir=self._get_infer_path(out_dir)
-            )
+            callback = CSVInferCallback(out_dir)
 
         self.infer_callback(
             model=model,

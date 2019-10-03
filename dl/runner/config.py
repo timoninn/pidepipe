@@ -79,5 +79,6 @@ class ConfigRunner(TrainRunner):
             loader=loader,
             out_dir=out_dir,
             resume_dir=resume_dir,
-            one_file_output=one_file_output
+            one_file_output=one_file_output,
+            mode='one'
         )

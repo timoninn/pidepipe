@@ -45,9 +45,9 @@ class KFoldsRunner():
     def _eval_fold(self, idx: int, loaders: [DataLoader]):
         print(f'Evaluate fold {idx}')
 
-        print('Valid set:')
+        print('Train set:')
         self.runner.eval(
-            loader=loaders[1],
+            loader=loaders[0],
             metrics=self.metrics,
             resume_dir=self._get_fold_resume_dir(idx)
         )
@@ -58,8 +58,6 @@ class KFoldsRunner():
             metrics=self.metrics,
             resume_dir=self._get_fold_resume_dir(idx)
         )
-
-        raise NotImplementedError, 'Different results for runs'
 
     def train(self):
         for idx, loaders in enumerate(self.kfolds):
