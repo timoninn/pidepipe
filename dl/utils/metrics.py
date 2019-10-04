@@ -1,8 +1,63 @@
+from typing import Callable
+
 import torch
 import torch.nn as nn
-from sklearn.metrics import accuracy_score
+from torch import Tensor
 
-from .functions import dice
+from .functions import dice, f_score, accuracy
+
+
+class Metric(nn.Module):
+    def __init__(
+        self,
+        metric_fn: Callable,
+        **metric_params
+    ):
+        super().__init__()
+
+        self.metric_fn = metric_fn
+        self.metric_params = metric_params
+
+    def forward(
+        self,
+        output: torch.Tensor,
+        target: torch.Tensor
+    ) -> Tensor:
+        batch_size = output.size(0)
+        metric_value = self.metric_fn(output, target, **self.metric_params)
+
+        return metric_value / batch_size
+
+
+class FScoreMetric(Metric):
+
+    def __init__(
+        self,
+        beta: float = 1.0,
+        threshold: float = 0.5,
+        activation: str = None,
+        eps: float = 1e-7
+    ):
+        super().__init__(
+            metric_fn=f_score,
+            beta=beta,
+            threshold=threshold,
+            activation=activation,
+            eps=eps
+        )
+
+class AccuracyMetric2(Metric):
+
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        activation: str = None
+    ):
+        super().__init__(
+            metric_fn=accuracy,
+            threshold=threshold,
+            activation=activation
+        )
 
 class AccuracyMetric(nn.Module):
     def __init__(
@@ -26,6 +81,7 @@ class AccuracyMetric(nn.Module):
         accuracy = correct / length
 
         return accuracy / batch_size
+
 
 class DiceMetric(nn.Module):
 

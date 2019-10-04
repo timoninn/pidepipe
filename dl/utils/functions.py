@@ -2,6 +2,7 @@ from typing import Any
 
 import torch
 from torch import nn
+from torch import Tensor
 
 
 def get_activation_func(name: str == 'none'):
@@ -92,3 +93,64 @@ def flat_dice(
     dice = 2.0 * intersection / (union + eps)
 
     return dice
+
+
+def to_predictions(
+    output: Tensor,
+    threshold: float = 0.5,
+    activation: str = None,
+) -> Tensor:
+    activation_func = get_activation_func(activation)
+    predicted = activation_func(output)
+
+    if threshold is not None:
+        predicted = (predicted > threshold).int()
+
+    return predicted
+
+
+def f_score(
+    output: Tensor,
+    target: Tensor,
+    beta: float = 1.0,
+    threshold: float = 0.5,
+    activation: str = None,
+    eps: float = 1e-7
+) -> Tensor:
+    assert output.dim() == target.dim() == 4, '4D tensors as input required'
+
+    predicted = to_predictions(
+        output=output,
+        threshold=threshold,
+        activation=activation
+    )
+
+    tp = torch.sum(predicted * target)
+    fp = torch.sum(predicted) - tp
+    fn = torch.sum(predicted) - tp
+
+    numerator = (1 + beta**2) * tp
+    denominator = numerator + (beta**2 * fn) + fp
+
+    return numerator / (denominator + eps)
+
+
+def accuracy(
+    output: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
+    activation: str = None,
+) -> Tensor:
+    assert output.dim() == target.dim() == 4, '4D tensors as input required'
+
+    predicted = to_predictions(
+        output=output,
+        threshold=threshold,
+        activation=activation
+    )
+
+    length = output.size(1)
+
+    correct = (predicted == target.int()).sum().float()
+
+    return correct / length
